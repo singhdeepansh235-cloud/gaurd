@@ -1,5 +1,4 @@
 
- HEAD
 # SentinelFuzz Pro | NCIIPC Security Suite
 
 SentinelFuzz Pro is a next-generation, web-based vulnerability scanner and security assessment platform designed for the NCIIPC. It simulates advanced reconnaissance and fuzzing operations while leveraging Google's Gemini models to generate real-time remediation intelligence and interactive assistance.
@@ -85,4 +84,4 @@ This tool is a **simulation** designed for educational and demonstration purpose
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
- 797518b03511d5071e7f78b9cb4370341279f268
+   
