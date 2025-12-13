@@ -1,6 +1,10 @@
 
 import React from 'react';
+<<<<<<< HEAD
 import { LayoutDashboard, Terminal, FileText, Settings, ShieldAlert, Activity, LogOut, MessageSquare } from 'lucide-react';
+=======
+import { LayoutDashboard, Terminal, FileText, Settings, ShieldAlert, Activity, LogOut } from 'lucide-react';
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
 
 interface SidebarProps {
   activeTab: string;
@@ -13,8 +17,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, onLogout }) 
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'scan', label: 'Live Scan', icon: Activity },
     { id: 'vulns', label: 'Findings', icon: ShieldAlert },
+<<<<<<< HEAD
     { id: 'reports', label: 'Reports', icon: FileText },
     { id: 'assistant', label: 'AI Assistant', icon: MessageSquare },
+=======
+    { id: 'reports', label: 'AI Reports', icon: FileText },
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
     { id: 'config', label: 'Configuration', icon: Settings },
   ];
 

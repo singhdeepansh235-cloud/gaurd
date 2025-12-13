@@ -22,6 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+<<<<<<< HEAD
 
 .vercel
 .env*.local
+=======
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268

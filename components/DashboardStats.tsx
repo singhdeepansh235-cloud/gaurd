@@ -1,8 +1,15 @@
+<<<<<<< HEAD
 
 import React from 'react';
 import { ScanStats } from '../types';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, BarChart, Bar } from 'recharts';
 import { Activity, Globe, ShieldAlert, Zap, Server, Cpu, Network, Clock } from 'lucide-react';
+=======
+import React from 'react';
+import { ScanStats } from '../types';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import { Activity, Globe, ShieldAlert, Zap } from 'lucide-react';
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
 
 interface DashboardStatsProps {
   stats: ScanStats;
@@ -15,6 +22,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
     { name: 'Medium', value: stats.vulnsFound - stats.criticalCount - stats.highCount, color: '#eab308' },
   ].filter(d => d.value > 0);
 
+<<<<<<< HEAD
   // Mock data for the area chart to make it look alive
   const trafficData = Array.from({ length: 20 }, (_, i) => ({
     name: `T-${20 - i}`,
@@ -42,10 +50,28 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         <p className="text-sm text-zinc-500 font-medium uppercase tracking-wider mt-1">{label}</p>
         {subtext && <p className="text-xs text-zinc-600 mt-2">{subtext}</p>}
       </div>
+=======
+  const requestData = [
+    { name: 'DNS', count: Math.floor(stats.requests * 0.2) },
+    { name: 'HTTP', count: Math.floor(stats.requests * 0.6) },
+    { name: 'Fuzz', count: Math.floor(stats.requests * 0.2) },
+  ];
+
+  const StatCard = ({ icon: Icon, label, value, color }: any) => (
+    <div className="bg-surface p-5 rounded-xl border border-zinc-800">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`p-2 rounded-lg ${color} bg-opacity-10`}>
+          <Icon className={`w-5 h-5 ${color.replace('bg-', 'text-')}`} />
+        </div>
+      </div>
+      <h3 className="text-2xl font-bold text-white">{value}</h3>
+      <p className="text-sm text-zinc-500">{label}</p>
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
     </div>
   );
 
   return (
+<<<<<<< HEAD
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Top Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -128,6 +154,20 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
           <p className="text-xs text-zinc-500 mb-6">Vulnerability severity classification</p>
           
           <div className="flex-1 min-h-[200px] relative">
+=======
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard icon={Activity} label="Requests Sent" value={stats.requests.toLocaleString()} color="bg-blue-500" />
+        <StatCard icon={Globe} label="Subdomains" value={stats.subdomains} color="bg-purple-500" />
+        <StatCard icon={ShieldAlert} label="Vulnerabilities" value={stats.vulnsFound} color="bg-red-500" />
+        <StatCard icon={Zap} label="Efficiency" value="98%" color="bg-emerald-500" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-surface p-6 rounded-xl border border-zinc-800">
+          <h3 className="text-lg font-semibold text-white mb-6">Vulnerability Distribution</h3>
+          <div className="h-64 w-full">
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
             {severityData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -139,6 +179,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
                     outerRadius={80}
                     paddingAngle={5}
                     dataKey="value"
+<<<<<<< HEAD
                     stroke="none"
                   >
                     {severityData.map((entry, index) => (
@@ -147,11 +188,21 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
                   </Pie>
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '8px' }}
+=======
+                  >
+                    {severityData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(0,0,0,0)" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                     itemStyle={{ color: '#e4e4e7' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
+<<<<<<< HEAD
                <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600">
                  <div className="w-16 h-16 rounded-full border-2 border-zinc-800 border-dashed animate-spin-slow mb-3"></div>
                  <span className="text-sm">System Secure</span>
@@ -215,6 +266,30 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
           <div>
              <div className="text-xs text-zinc-500 uppercase">Uptime</div>
              <div className="text-sm font-medium text-purple-400">42h 12m 30s</div>
+=======
+              <div className="flex items-center justify-center h-full text-zinc-600 text-sm">
+                No vulnerabilities detected
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-surface p-6 rounded-xl border border-zinc-800">
+          <h3 className="text-lg font-semibold text-white mb-6">Request Traffic (Engine Activity)</h3>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={requestData}>
+                <XAxis dataKey="name" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
+                <Tooltip 
+                  cursor={{fill: '#27272a'}}
+                  contentStyle={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px' }}
+                  itemStyle={{ color: '#e4e4e7' }}
+                />
+                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
           </div>
         </div>
       </div>
@@ -222,4 +297,8 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
   );
 };
 
+<<<<<<< HEAD
 export default DashboardStats;
+=======
+export default DashboardStats;
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268

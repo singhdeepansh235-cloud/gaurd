@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@google/genai": "^1.30.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
@@ -17,6 +18,14 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "recharts": "^3.4.1"
+=======
+    "react": "^19.2.0",
+    "@google/genai": "^1.30.0",
+    "recharts": "^3.4.1",
+    "react-markdown": "^10.1.0",
+    "lucide-react": "^0.554.0",
+    "react-dom": "^19.2.0"
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

