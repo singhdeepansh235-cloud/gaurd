@@ -13,6 +13,7 @@ SentinelFuzz Pro is a next-generation, web-based vulnerability scanner and secur
 *   **Role-Based Access Control**: Secure login system with persistent session management (simulated via local storage).
 *   **Contextual Help**: Integrated tooltips and visual guides to assist operators with configuration and analysis.
 
+
 ## 🛠️ Technology Stack
 
 *   **Frontend**: React 19, TypeScript
@@ -26,18 +27,15 @@ SentinelFuzz Pro is a next-generation, web-based vulnerability scanner and secur
 *   **State Persistence**: Browser LocalStorage
 
 ## 📋 Installation & Setup
-
 1.  **Clone the Repository**
     ```bash
     git clone https://github.com/nciipc/sentinelfuzz-pro.git
     cd sentinelfuzz-pro
     ```
-
 2.  **Install Dependencies**
     ```bash
     npm install
     ```
-
 3.  **Configure API Key**
     Create a `.env` file in the root directory and add your Google Gemini API key:
     ```env
