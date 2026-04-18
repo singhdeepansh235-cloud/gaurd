@@ -1,0 +1,55 @@
+# SQL Injection — Error-Based detection template
+
+id: sqli-error
+name: SQL Injection — Error-Based
+severity: critical
+tags:
+  - sqli
+  - injection
+  - owasp-a03
+  - database
+description: >
+  Detects error-based SQL injection by injecting syntax-breaking payloads
+  and matching database error signatures (MySQL, PostgreSQL, MSSQL, Oracle,
+  SQLite) in the response body.
+references:
+  - https://owasp.org/www-community/attacks/SQL_Injection
+  - https://cwe.mitre.org/data/definitions/89.html
+cwe: CWE-89
+owasp: "A03:2021-Injection"
+remediation: >
+  Use parameterised queries (prepared statements) for all database access.
+  Never concatenate user input into SQL strings.
+
+target_params:
+  - query
+  - form
+  - cookie
+payloads: templates/payloads/sqli.txt
+stop_on_first_match: true
+matchers_condition: or
+
+matchers:
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "SQL syntax.*?MySQL"
+      - "Warning.*?\\bmysql_"
+      - "MySqlException"
+      - "com\\.mysql\\.jdbc"
+      - "PostgreSQL.*?ERROR"
+      - "pg_query\\(\\)"
+      - "pg_exec\\(\\)"
+      - "unterminated quoted string"
+      - "PSQLException"
+      - "Microsoft.*?ODBC.*?SQL Server"
+      - "Unclosed quotation mark"
+      - "ORA-\\d{5}"
+      - "PLS-\\d{4,5}"
+      - "SQLite3::|SQLITE_ERROR"
+      - "sqlite3\\.OperationalError"
+      - "SQLSTATE\\["
+      - "syntax error at or near"
+      - "SQL command not properly ended"
+      - "Incorrect syntax near"

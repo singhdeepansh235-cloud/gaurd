@@ -1,0 +1,49 @@
+# Reflected Cross-Site Scripting (XSS) detection template
+
+id: xss-reflected
+name: Reflected Cross-Site Scripting
+severity: high
+tags:
+  - xss
+  - injection
+  - owasp-a03
+  - client-side
+description: >
+  Detects reflected XSS by injecting script payloads into parameters and
+  checking if they appear unescaped in the HTML response body. A match
+  means user input flows directly into the page without sanitisation.
+references:
+  - https://owasp.org/www-community/attacks/xss/
+  - https://cwe.mitre.org/data/definitions/79.html
+cwe: CWE-79
+owasp: "A03:2021-Injection"
+remediation: >
+  HTML-encode all user-supplied data before inserting it into HTML context.
+  Use Content-Security-Policy headers to mitigate impact.
+
+target_params:
+  - query
+  - form
+payloads: templates/payloads/xss.txt
+stop_on_first_match: true
+matchers_condition: or
+
+matchers:
+  - type: word
+    part: body
+    words:
+      - "<script>alert("
+      - "onerror=alert("
+      - "<svg/onload="
+      - "<svg onload="
+      - "javascript:alert("
+      - "<body onload=alert("
+      - "<details open ontoggle="
+      - "<img src=x onerror="
+    condition: or
+
+  - type: header
+    part: header
+    negative: true
+    headers:
+      Content-Type: "application/json"

@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+{% set active_page = "phishing_check" %}
+
+{% block title %}Phishing Check — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🎣 Phishing Detection</h1>
+    <p class="subtitle">Comprehensive URL analysis — brand impersonation, homoglyph attacks, suspicious TLDs, and more.</p>
+</div>
+
+<div class="grid-2">
+    <div class="card mb-20">
+        <h3 class="mb-16">Target Input</h3>
+        <form id="phishing-form" onsubmit="return runPhishingCheck(event)">
+            <div class="form-group">
+                <label class="form-label">URL or Domain <span class="required">*</span></label>
+                <input type="text"
+                       class="form-input"
+                       id="phishing-target"
+                       placeholder="https://accounts-g00gle-security.com"
+                       required
+                       autocomplete="off"
+                       style="font-size: 1.05rem; padding: 14px 18px;">
+                <p class="form-hint">Supports full URLs and raw domains. Sentinel extracts the hostname automatically.</p>
+            </div>
+
+            <div class="mt-12">
+                <p class="text-xs text-muted mb-8">Quick examples:</p>
+                <div class="flex gap-8 flex-wrap">
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('https://google.com')">✅ Trusted</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('http://g00gle-security-alert.com')">⚠️ Lookalike</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('http://192.168.10.24/login')">🔢 IP-based</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('paypal-secure.xyz')">🌐 Bad TLD</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('login.banking-secure.tk/verify')">🔑 Keywords</button>
+                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('bit.ly/3xR4f9')">🔗 Shortener</button>
+                </div>
+            </div>
+
+            <div class="alert alert-warning mt-16">
+                <span class="alert-icon">ℹ️</span>
+                <div>Multi-layer heuristic analysis — checks 12 phishing indicators including brand similarity, homoglyphs, TLDs, keywords, and URL structure.</div>
+            </div>
+
+            <div class="flex gap-12 mt-20">
+                <button type="submit" class="btn btn-primary btn-lg" id="phishing-submit-btn">
+                    🔎 Analyze URL
+                </button>
+                <a href="/scan/new" class="btn btn-secondary btn-lg">Open Fuzzing Scan</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="card mb-20" id="phishing-result-card">
+        <h3 class="mb-16">Analysis Result</h3>
+        <div id="phishing-empty-state" class="empty-state" style="padding: 24px 12px;">
+            <div class="empty-state-icon">🛡️</div>
+            <h3>No result yet</h3>
+            <p>Enter a URL and click Analyze to see comprehensive phishing detection results.</p>
+        </div>
+
+        <div id="phishing-result" class="hidden">
+            <!-- Status + Risk Score cards -->
+            <div class="grid-2 mb-16">
+                <div class="card stat-card">
+                    <div class="card-header">
+                        <span class="card-title">Verdict</span>
+                        <span class="card-icon" id="phishing-status-icon">🚨</span>
+                    </div>
+                    <div class="card-value" id="phishing-status-text" style="font-size: 1.5rem;"></div>
+                    <span class="card-footer" id="phishing-domain-text"></span>
+                </div>
+                <div class="card stat-card">
+                    <div class="card-header">
+                        <span class="card-title">Risk Score</span>
+                        <span class="card-icon">📊</span>
+                    </div>
+                    <div class="card-value" id="phishing-risk-score" style="font-size: 1.5rem;"></div>
+                    <span class="card-footer">Confidence: <span id="phishing-confidence-text"></span></span>
+                </div>
+            </div>
+
+            <!-- Matched brand info -->
+            <div class="mb-16" id="brand-match-section" style="display:none;">
+                <div class="alert alert-warning">
+                    <span class="alert-icon">⚠️</span>
+                    <div>
+                        <strong>Brand Impersonation Detected:</strong>
+                        This domain appears to impersonate <strong id="brand-match-name"></strong>.
+                        The legitimate domain is <code id="brand-match-legitimate"></code>.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reasons -->
+            <div class="mb-16">
+                <h4 class="mb-8">🔍 Findings</h4>
+                <div id="phishing-reasons-container"></div>
+                <div id="phishing-no-reasons" class="hidden" style="color: var(--status-complete); padding: 12px;">
+                    ✅ No phishing indicators were detected.
+                </div>
+            </div>
+
+            <!-- Security checks grid -->
+            <div class="mb-16">
+                <h4 class="mb-12">🧪 Security Checks</h4>
+                <div class="grid-2" id="security-checks-grid" style="gap: 8px;"></div>
+            </div>
+
+            <!-- Summary -->
+            <div class="alert alert-info mb-16">
+                <span class="alert-icon">🧠</span>
+                <div id="phishing-summary-text"></div>
+            </div>
+
+            <!-- Gemini Analysis Engine -->
+            <div class="card mt-16">
+                <div class="flex items-center justify-between mb-8">
+                    <h4>🤖 AI Analysis Engine</h4>
+                    <span class="badge badge-info" id="analysis-engine-model">gemini</span>
+                </div>
+                <p class="text-sm text-muted mb-12" id="analysis-engine-status"></p>
+                <div class="mb-12">
+                    <strong>Verdict:</strong>
+                    <span id="analysis-engine-verdict"></span>
+                </div>
+                <div class="mb-12">
+                    <strong>Summary:</strong>
+                    <div id="analysis-engine-summary" class="mt-8"></div>
+                </div>
+                <div>
+                    <strong>Signals:</strong>
+                    <ul id="analysis-engine-signals" class="text-sm" style="padding-left: 18px;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .check-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+    .check-item:hover {
+        background: rgba(255,255,255,0.06);
+        border-color: rgba(255,255,255,0.1);
+    }
+    .check-icon {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        width: 24px;
+        text-align: center;
+    }
+    .check-label {
+        flex: 1;
+        color: var(--text-secondary, #94a3b8);
+    }
+    .check-status {
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .check-pass {
+        color: var(--status-complete, #22c55e);
+        background: rgba(34, 197, 94, 0.1);
+    }
+    .check-fail {
+        color: var(--sev-critical, #ef4444);
+        background: rgba(239, 68, 68, 0.1);
+    }
+    .check-warn {
+        color: var(--sev-medium, #f59e0b);
+        background: rgba(245, 158, 11, 0.1);
+    }
+    .finding-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 14px;
+        margin-bottom: 6px;
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.06);
+        border-left: 3px solid var(--sev-medium, #f59e0b);
+        font-size: 0.88rem;
+        line-height: 1.5;
+        color: var(--text-primary, #e2e8f0);
+        transition: all 0.2s ease;
+    }
+    .finding-item:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+    .finding-item.critical {
+        border-left-color: var(--sev-critical, #ef4444);
+        background: rgba(239, 68, 68, 0.08);
+    }
+    .risk-gauge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+    }
+    .risk-gauge-bar {
+        flex: 1;
+        height: 8px;
+        border-radius: 4px;
+        background: rgba(255,255,255,0.08);
+        overflow: hidden;
+    }
+    .risk-gauge-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.6s ease-out, background 0.3s ease;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+        animation: fadeInUp 0.35s ease-out forwards;
+    }
+</style>
+
+<script>
+function setPhishingTarget(value) {
+    const input = document.getElementById('phishing-target');
+    input.value = value;
+    input.focus();
+}
+
+function statusColor(status) {
+    if (status === 'Likely Phishing') return 'var(--sev-critical, #ef4444)';
+    if (status === 'Suspicious') return 'var(--sev-medium, #f59e0b)';
+    return 'var(--status-complete, #22c55e)';
+}
+
+function statusIcon(status) {
+    if (status === 'Likely Phishing') return '🚨';
+    if (status === 'Suspicious') return '⚠️';
+    return '✅';
+}
+
+function riskColor(score) {
+    if (score >= 60) return '#ef4444';
+    if (score >= 30) return '#f59e0b';
+    return '#22c55e';
+}
+
+async function runPhishingCheck(e) {
+    e.preventDefault();
+
+    const input = document.getElementById('phishing-target');
+    const target = input.value.trim();
+    if (!target) return false;
+
+    const btn = document.getElementById('phishing-submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin">⏳</span> Analyzing...';
+
+    try {
+        const res = await fetch('/api/phishing-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target }),
+        });
+
+        if (!res.ok) {
+            let errMsg = 'Failed to run phishing check';
+            try {
+                const err = await res.json();
+                errMsg = err.detail || errMsg;
+            } catch (_) {}
+            showToast(errMsg, 'error');
+            return false;
+        }
+
+        const data = await res.json();
+        renderPhishingResult(data);
+        showToast('Phishing analysis complete', 'success');
+    } catch (err) {
+        showToast('Network error: ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '🔎 Analyze URL';
+    }
+
+    return false;
+}
+
+function renderPhishingResult(data) {
+    const result = data.phishing || data;
+    const engine = data.analysis_engine || null;
+    const checks = result.checks || {};
+
+    // Toggle visibility
+    document.getElementById('phishing-empty-state').classList.add('hidden');
+    const resultEl = document.getElementById('phishing-result');
+    resultEl.classList.remove('hidden');
+    resultEl.classList.add('animate-in');
+
+    // ── Status card ──
+    const statusEl = document.getElementById('phishing-status-text');
+    statusEl.textContent = result.status;
+    statusEl.style.color = statusColor(result.status);
+    document.getElementById('phishing-status-icon').textContent = statusIcon(result.status);
+    document.getElementById('phishing-domain-text').textContent =
+        document.getElementById('phishing-target').value.trim();
+
+    // ── Risk score ──
+    const riskScore = data.risk_score || 0;
+    const riskEl = document.getElementById('phishing-risk-score');
+    riskEl.textContent = `${riskScore}/100`;
+    riskEl.style.color = riskColor(riskScore);
+    document.getElementById('phishing-confidence-text').textContent = `${result.confidence || 0}%`;
+
+    // ── Brand match alert ──
+    const brandSection = document.getElementById('brand-match-section');
+    if (result.matched_brand) {
+        brandSection.style.display = 'block';
+        document.getElementById('brand-match-name').textContent = result.matched_brand;
+        document.getElementById('brand-match-legitimate').textContent =
+            result.matched_domain || result.matched_brand + '.com';
+    } else {
+        brandSection.style.display = 'none';
+    }
+
+    // ── Findings / Reasons ──
+    const reasonsContainer = document.getElementById('phishing-reasons-container');
+    const noReasons = document.getElementById('phishing-no-reasons');
+    reasonsContainer.innerHTML = '';
+
+    if (result.reasons && result.reasons.length > 0) {
+        noReasons.classList.add('hidden');
+        result.reasons.forEach((reason, i) => {
+            const div = document.createElement('div');
+            div.className = 'finding-item' + (result.status === 'Likely Phishing' && i === 0 ? ' critical' : '');
+            div.innerHTML = `<span style="font-size:1.1rem;">⚡</span> <span>${escapeHtml(reason)}</span>`;
+            div.style.animationDelay = `${i * 0.05}s`;
+            div.classList.add('animate-in');
+            reasonsContainer.appendChild(div);
+        });
+    } else {
+        noReasons.classList.remove('hidden');
+    }
+
+    // ── Security checks grid ──
+    const checksGrid = document.getElementById('security-checks-grid');
+    checksGrid.innerHTML = '';
+
+    const checkDefs = [
+        { key: 'whitelist',           icon: '🏠', label: 'Known legitimate domain' },
+        { key: 'ip_based',            icon: '🔢', label: 'IP-based URL' },
+        { key: 'brand_similarity',    icon: '🎭', label: 'Brand impersonation' },
+        { key: 'homoglyphs',          icon: '🔤', label: 'Homoglyph / leetspeak' },
+        { key: 'suspicious_tld',      icon: '🌐', label: 'Suspicious TLD' },
+        { key: 'suspicious_keywords', icon: '🔑', label: 'Phishing keywords' },
+        { key: 'subdomain_depth',     icon: '📂', label: 'Subdomain depth' },
+        { key: 'hyphen_abuse',        icon: '➖', label: 'Hyphen abuse' },
+        { key: 'url_length',          icon: '📏', label: 'URL length' },
+        { key: 'https',               icon: '🔒', label: 'HTTPS encryption' },
+        { key: 'url_shortener',       icon: '🔗', label: 'URL shortener' },
+        { key: 'punycode',            icon: '🌍', label: 'Punycode / IDN' },
+        { key: 'encoded_chars',       icon: '🔣', label: 'Encoded characters' },
+    ];
+
+    checkDefs.forEach(def => {
+        const check = checks[def.key];
+        if (!check) return;
+
+        const flagged = check.flagged;
+        const passed = check.passed;
+        const item = document.createElement('div');
+        item.className = 'check-item';
+
+        let statusClass, statusText;
+        if (passed) {
+            statusClass = 'check-pass';
+            statusText = 'VERIFIED';
+        } else if (flagged) {
+            statusClass = 'check-fail';
+            statusText = 'FLAGGED';
+        } else {
+            statusClass = 'check-pass';
+            statusText = 'CLEAR';
+        }
+
+        item.innerHTML = `
+            <span class="check-icon">${def.icon}</span>
+            <span class="check-label">${def.label}</span>
+            <span class="check-status ${statusClass}">${statusText}</span>
+        `;
+        checksGrid.appendChild(item);
+    });
+
+    // ── Summary ──
+    const summaryParts = [];
+    if (result.matched_brand) {
+        summaryParts.push(`This domain closely resembles the trusted brand "${result.matched_brand}" (legitimate: ${result.matched_domain}).`);
+    }
+    summaryParts.push(
+        `Sentinel rated this URL as ${result.status.toLowerCase()} with ${result.confidence}% confidence and a risk score of ${riskScore}/100.`
+    );
+    if (result.reasons && result.reasons.length > 0) {
+        summaryParts.push(`${result.reasons.length} phishing indicator${result.reasons.length > 1 ? 's' : ''} detected.`);
+    } else {
+        summaryParts.push('No phishing indicators were detected.');
+    }
+    document.getElementById('phishing-summary-text').textContent = summaryParts.join(' ');
+
+    // ── Gemini Analysis Engine ──
+    document.getElementById('analysis-engine-model').textContent =
+        engine ? `${engine.provider}:${engine.model}` : 'gemini';
+    document.getElementById('analysis-engine-status').textContent = engine && engine.enabled
+        ? '🟢 Live AI review is active for this analysis.'
+        : '🔴 AI engine is not active — showing heuristic-only results. Set GEMINI_API_KEY to enable.';
+    
+    const verdictEl = document.getElementById('analysis-engine-verdict');
+    verdictEl.textContent = engine ? engine.verdict : result.status;
+    verdictEl.style.color = statusColor(engine ? engine.verdict : result.status);
+    verdictEl.style.fontWeight = '600';
+
+    document.getElementById('analysis-engine-summary').textContent = engine
+        ? engine.summary
+        : 'AI analysis is disabled. Results are based on heuristic checks only.';
+
+    const engineSignalsEl = document.getElementById('analysis-engine-signals');
+    engineSignalsEl.innerHTML = '';
+    ((engine && engine.signals) || []).forEach(signal => {
+        const li = document.createElement('li');
+        li.textContent = signal;
+        li.style.marginBottom = '8px';
+        engineSignalsEl.appendChild(li);
+    });
+}
+</script>
+{% endblock %}

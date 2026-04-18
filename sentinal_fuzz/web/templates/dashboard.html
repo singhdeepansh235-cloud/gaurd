@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% set active_page = "dashboard" %}
+
+{% block title %}Dashboard — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<!-- Hero: Quick Scan -->
+<div class="hero-card mb-24" id="hero-quick-scan">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <h2>🛡️ Start a Security Scan</h2>
+    <p>Enter a target URL to discover vulnerabilities with the Sentinal-Fuzz DAST scanner</p>
+    <form class="hero-input-group" id="quick-scan-form" onsubmit="return startQuickScan(event)">
+        <input type="url"
+               class="form-input"
+               id="quick-scan-url"
+               placeholder="https://example.com"
+               required
+               autocomplete="url">
+        <button type="submit" class="btn btn-primary btn-lg" id="quick-scan-btn">
+            ⚡ Scan Now
+        </button>
+    </form>
+
+    <div class="alert alert-warning mt-16" style="max-width: 600px; margin-left: auto; margin-right: auto; text-align: left;">
+        <span class="alert-icon">⚠️</span>
+        <span>Only scan targets you own or have explicit permission to test.</span>
+    </div>
+
+    <div class="flex items-center justify-center gap-12 mt-16 flex-wrap">
+        <a href="/phishing-check" class="btn btn-secondary">🎣 Open Phishing Check</a>
+        <span class="text-sm text-muted">Use this for fast URL/domain lookalike analysis without running the full fuzzer.</span>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="grid-4 mb-24">
+    <div class="card stat-card" id="stat-total-scans">
+        <div class="card-header">
+            <span class="card-title">Total Scans</span>
+            <span class="card-icon">🔍</span>
+        </div>
+        <div class="card-value">{{ total_scans }}</div>
+        <span class="card-footer">All time</span>
+    </div>
+
+    <div class="card stat-card" id="stat-total-findings">
+        <div class="card-header">
+            <span class="card-title">Findings</span>
+            <span class="card-icon">🐛</span>
+        </div>
+        <div class="card-value">{{ total_findings }}</div>
+        <span class="card-footer">Vulnerabilities discovered</span>
+    </div>
+
+    <div class="card stat-card" id="stat-active-scans">
+        <div class="card-header">
+            <span class="card-title">Active Scans</span>
+            <span class="card-icon">📡</span>
+        </div>
+        <div class="card-value">{{ active_scans|length }}</div>
+        <span class="card-footer">Currently running</span>
+    </div>
+
+    <div class="card stat-card" id="stat-templates">
+        <div class="card-header">
+            <span class="card-title">Templates</span>
+            <span class="card-icon">📝</span>
+        </div>
+        <div class="card-value">9</div>
+        <span class="card-footer">Active fuzzing templates</span>
+    </div>
+</div>
+
+<!-- Active Scans -->
+{% if active_scans %}
+<div class="mb-24">
+    <h2 class="mb-16">📡 Active Scans</h2>
+    {% for scan in active_scans %}
+    <div class="card mb-16" style="border-left: 3px solid var(--status-running);">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-12">
+                <div class="scan-running-indicator"></div>
+                <span class="badge badge-running">Running</span>
+                <strong>{{ scan.target }}</strong>
+            </div>
+            <a href="/scan/{{ scan.scan_id }}/live" class="btn btn-primary btn-sm">View Live →</a>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {% if scan.fuzz.endpoints_total > 0 %}{{ (scan.fuzz.endpoints_tested / scan.fuzz.endpoints_total * 100)|int }}{% else %}0{% endif %}%"></div>
+        </div>
+        <div class="flex justify-between mt-8 text-xs text-muted">
+            <span>Stage: {{ scan.stage }}</span>
+            <span>{{ scan.findings_count }} findings</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Suggested Vulnerable Test Targets -->
+<div class="mb-24">
+    <div class="flex items-center justify-between mb-16">
+        <div>
+            <h2>🎯 Practice Targets</h2>
+            <p class="text-sm text-muted mt-4">Open-source vulnerable apps designed for DAST scanner testing</p>
+        </div>
+    </div>
+    <div class="grid-3">
+        <div class="target-card" onclick="document.getElementById('quick-scan-url').value='http://127.0.0.1:8899'; document.getElementById('quick-scan-url').focus(); window.scrollTo({top:0, behavior:'smooth'})">
+            <div class="target-icon">🧪</div>
+            <div class="target-name">Built-in Test Server</div>
+            <div class="target-desc">Our own vulnerable test app with XSS, SQLi, SSTI, SSRF, and more. Run <code>python test_server.py</code> first.</div>
+            <div class="target-url">http://127.0.0.1:8899</div>
+        </div>
+        <div class="target-card" onclick="document.getElementById('quick-scan-url').value='http://localhost:3000'; document.getElementById('quick-scan-url').focus(); window.scrollTo({top:0, behavior:'smooth'})">
+            <div class="target-icon">🧃</div>
+            <div class="target-name">OWASP Juice Shop</div>
+            <div class="target-desc">Modern vulnerable web app with 100+ challenges. Run via Docker: <code>docker run -p 3000:3000 bkimminich/juice-shop</code></div>
+            <div class="target-url">http://localhost:3000</div>
+        </div>
+        <div class="target-card" onclick="document.getElementById('quick-scan-url').value='http://localhost:4280'; document.getElementById('quick-scan-url').focus(); window.scrollTo({top:0, behavior:'smooth'})">
+            <div class="target-icon">🕸️</div>
+            <div class="target-name">DVWA</div>
+            <div class="target-desc">Damn Vulnerable Web App — classic security testing target. Run via Docker: <code>docker run -p 4280:80 vulnerables/web-dvwa</code></div>
+            <div class="target-url">http://localhost:4280</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Scans -->
+<div class="mb-24">
+    <div class="flex items-center justify-between mb-16">
+        <h2>📋 Recent Scans</h2>
+        <a href="/scans" class="btn btn-ghost">View All →</a>
+    </div>
+
+    {% if recent_scans %}
+    <div class="table-wrap">
+        <table class="table" id="recent-scans-table">
+            <thead>
+                <tr>
+                    <th>Target</th>
+                    <th>Profile</th>
+                    <th>Status</th>
+                    <th>Findings</th>
+                    <th>Risk Score</th>
+                    <th>Duration</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for scan in recent_scans %}
+                <tr class="link-row" onclick="window.location='/scan/{{ scan.id }}/report'" id="scan-row-{{ scan.id }}">
+                    <td>
+                        <div class="flex items-center gap-8">
+                            {% if scan.status == 'running' %}<div class="scan-running-indicator"></div>{% endif %}
+                            <span class="text-mono text-sm">{{ scan.target }}</span>
+                        </div>
+                    </td>
+                    <td><span class="text-sm">{{ scan.profile }}</span></td>
+                    <td>
+                        <span class="badge badge-{{ scan.status }}">{{ scan.status }}</span>
+                    </td>
+                    <td><strong>{{ scan.findings_count or 0 }}</strong></td>
+                    <td>
+                        {% set score = scan.risk_score or 0 %}
+                        <span style="color: {% if score >= 70 %}var(--sev-critical){% elif score >= 40 %}var(--sev-high){% elif score >= 15 %}var(--sev-medium){% else %}var(--status-complete){% endif %}; font-weight: 700;">
+                            {{ score|int }}/100
+                        </span>
+                    </td>
+                    <td class="text-muted text-sm">{{ "%.1f"|format(scan.duration_seconds or 0) }}s</td>
+                    <td class="text-muted text-sm">{{ scan.created_at[:16] if scan.created_at else '—' }}</td>
+                    <td>
+                        <a href="/scan/{{ scan.id }}/report" class="btn btn-ghost btn-sm" onclick="event.stopPropagation()">Report →</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🔍</div>
+        <h3>No scans yet</h3>
+        <p>Start your first scan using the form above or pick a practice target.</p>
+        <a href="/scan/new" class="btn btn-primary">🎯 Start First Scan</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Getting Started Guide -->
+<div class="card">
+    <h3 class="mb-16">🚀 Getting Started</h3>
+    <div class="grid-3">
+        <div class="step-card">
+            <div class="step-num">1</div>
+            <h4 class="mb-8">Enter Target URL</h4>
+            <p class="text-sm">Type or paste the URL of the web application you want to test. Make sure you have permission to scan it.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-num">2</div>
+            <h4 class="mb-8">Watch Live Scan</h4>
+            <p class="text-sm">The scanner will crawl the site, discover endpoints, and test them for vulnerabilities in real-time.</p>
+        </div>
+        <div class="step-card">
+            <div class="step-num">3</div>
+            <h4 class="mb-8">Review Report</h4>
+            <p class="text-sm">Get a detailed report with findings, severity ratings, and remediation advice for each vulnerability.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function startQuickScan(e) {
+    e.preventDefault();
+    const url = document.getElementById('quick-scan-url').value.trim();
+    if (!url) return false;
+
+    const btn = document.getElementById('quick-scan-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin">⏳</span> Starting...';
+
+    try {
+        const res = await fetch('/api/scans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target: url, scan_profile: 'standard' }),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            showToast(err.detail || 'Failed to start scan', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '⚡ Scan Now';
+            return false;
+        }
+
+        const data = await res.json();
+        showToast('Scan started successfully!', 'success');
+        window.location.href = `/scan/${data.scan_id}/live`;
+    } catch (err) {
+        showToast('Network error: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '⚡ Scan Now';
+    }
+    return false;
+}
+</script>
+{% endblock %}

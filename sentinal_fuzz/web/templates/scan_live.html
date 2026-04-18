@@ -1,0 +1,390 @@
+{% extends "base.html" %}
+{% set active_page = "scan_live" %}
+
+{% block title %}Live Scan — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<!-- Header Bar -->
+<div class="scan-header-bar" id="scan-header">
+    <div class="scan-header-item">
+        <span class="scan-header-label">Target</span>
+        <span class="scan-header-value text-mono" id="hdr-target">{{ state.target if state else scan_data.target if scan_data else '—' }}</span>
+    </div>
+    <div class="scan-header-sep"></div>
+    <div class="scan-header-item">
+        <span class="scan-header-label">Profile</span>
+        <span class="scan-header-value" id="hdr-profile">{{ state.profile if state else scan_data.profile if scan_data else 'standard' }}</span>
+    </div>
+    <div class="scan-header-sep"></div>
+    <div class="scan-header-item">
+        <span class="scan-header-label">Elapsed</span>
+        <span class="scan-header-value" id="hdr-elapsed">00:00:00</span>
+    </div>
+    <div class="scan-header-sep"></div>
+    <div class="scan-header-item">
+        <span class="scan-header-label">Stage</span>
+        <span class="scan-header-value flex items-center gap-8" id="hdr-stage">
+            <div class="scan-running-indicator" id="stage-indicator"></div>
+            <span id="stage-text">Initializing</span>
+        </span>
+    </div>
+    <div style="margin-left: auto; display: flex; gap: 8px;">
+        <button class="btn btn-danger btn-sm" id="btn-stop" onclick="stopScan()">⏹️ Stop Scan</button>
+        <a href="/scan/{{ scan_id }}/report" class="btn btn-primary btn-sm hidden" id="btn-report">📊 View Report</a>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="scan-layout">
+    <!-- LEFT: Stats Panels -->
+    <div>
+        <!-- Crawl Progress -->
+        <div class="scan-panel mb-20">
+            <div class="panel-header">
+                <span class="panel-header-icon">🕷️</span>
+                <span class="panel-title">Crawl Progress</span>
+            </div>
+            <div class="panel-body">
+                <div class="stat-row">
+                    <span class="stat-label">URLs Found</span>
+                    <span class="stat-value" id="crawl-urls">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Forms Discovered</span>
+                    <span class="stat-value" id="crawl-forms">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">API Endpoints</span>
+                    <span class="stat-value" id="crawl-apis">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Current URL</span>
+                    <span class="stat-value text-sm text-mono truncate" id="crawl-current" style="max-width: 200px;">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fuzz Progress -->
+        <div class="scan-panel mb-20">
+            <div class="panel-header">
+                <span class="panel-header-icon">⚡</span>
+                <span class="panel-title">Fuzz Progress</span>
+            </div>
+            <div class="panel-body">
+                <div class="stat-row">
+                    <span class="stat-label">Endpoints Tested</span>
+                    <span class="stat-value"><span id="fuzz-tested">0</span> / <span id="fuzz-total">0</span></span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Requests Sent</span>
+                    <span class="stat-value" id="fuzz-requests">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Req/sec</span>
+                    <span class="stat-value" id="fuzz-rps">0.0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Findings Summary -->
+        <div class="scan-panel">
+            <div class="panel-header">
+                <span class="panel-header-icon">📊</span>
+                <span class="panel-title">Findings Summary</span>
+            </div>
+            <div class="panel-body">
+                <div class="stat-row">
+                    <span class="stat-label">Total Findings</span>
+                    <span class="stat-value" id="findings-total" style="font-size: 1.25rem;">0</span>
+                </div>
+                <div class="sev-summary mt-12">
+                    <div class="sev-chip" style="background: var(--sev-critical-bg); color: var(--sev-critical);">
+                        🔴 <span class="sev-chip-count" id="sev-critical">0</span>
+                    </div>
+                    <div class="sev-chip" style="background: var(--sev-high-bg); color: var(--sev-high);">
+                        🟠 <span class="sev-chip-count" id="sev-high">0</span>
+                    </div>
+                    <div class="sev-chip" style="background: var(--sev-medium-bg); color: var(--sev-medium);">
+                        🟡 <span class="sev-chip-count" id="sev-medium">0</span>
+                    </div>
+                    <div class="sev-chip" style="background: var(--sev-low-bg); color: var(--sev-low);">
+                        🔵 <span class="sev-chip-count" id="sev-low">0</span>
+                    </div>
+                    <div class="sev-chip" style="background: var(--sev-info-bg); color: var(--sev-info);">
+                        ⚪ <span class="sev-chip-count" id="sev-info">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: Findings Feed -->
+    <div class="scan-panel">
+        <div class="panel-header">
+            <span class="panel-header-icon">🔍</span>
+            <span class="panel-title">Live Findings</span>
+            <span class="text-xs text-muted" id="findings-scroll-info" style="margin-left: auto;"></span>
+        </div>
+        <div class="findings-feed" id="findings-feed">
+            <div class="empty-state" id="findings-empty" style="padding: 40px;">
+                <div class="empty-state-icon">🔍</div>
+                <h3>Waiting for findings...</h3>
+                <p class="text-sm">Vulnerabilities will appear here as they are discovered during the scan.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Progress Bar -->
+<div class="card">
+    <div class="flex items-center justify-between mb-8">
+        <span class="text-sm text-muted" id="progress-label">Scanning...</span>
+        <span class="text-sm" id="progress-percent" style="font-weight: 700;">0%</span>
+    </div>
+    <div class="progress-bar progress-lg">
+        <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+    </div>
+</div>
+
+<!-- Scan complete overlay (hidden initially) -->
+<div id="scan-complete-card" class="card card-glow mt-20 hidden">
+    <div class="text-center" style="padding: 20px;">
+        <div style="font-size: 3rem; margin-bottom: 12px;">🎉</div>
+        <h2>Scan Complete!</h2>
+        <p class="mt-8 mb-20">The scan has finished. Review the full report for detailed findings and remediation advice.</p>
+        <div class="flex gap-12 justify-between" style="justify-content: center;">
+            <a href="/scan/{{ scan_id }}/report" class="btn btn-primary btn-lg">📊 View Full Report</a>
+            <a href="/scan/new" class="btn btn-secondary btn-lg">🎯 New Scan</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const SCAN_ID = "{{ scan_id }}";
+let ws;
+let startTime = Date.now();
+let elapsedTimer;
+let scanComplete = false;
+
+function connectWebSocket() {
+    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${protocol}//${location.host}/ws/scan/${SCAN_ID}`);
+
+    ws.onopen = () => {
+        console.log('[WS] Connected');
+    };
+
+    ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        handleEvent(msg.event, msg.data);
+    };
+
+    ws.onclose = () => {
+        if (!scanComplete) {
+            console.log('[WS] Disconnected, reconnecting in 2s...');
+            setTimeout(connectWebSocket, 2000);
+        }
+    };
+
+    ws.onerror = (err) => {
+        console.error('[WS] Error:', err);
+    };
+}
+
+function handleEvent(event, data) {
+    switch (event) {
+        case 'initial_state':
+            updateProgress(data);
+            break;
+
+        case 'url_found':
+            document.getElementById('crawl-urls').textContent = data.urls_found || 0;
+            document.getElementById('crawl-apis').textContent = data.apis_found || 0;
+            if (data.url) {
+                const url = data.url.length > 35 ? '…' + data.url.slice(-34) : data.url;
+                document.getElementById('crawl-current').textContent = url;
+            }
+            break;
+
+        case 'crawl_complete':
+            document.getElementById('fuzz-total').textContent = data.endpoints_total || 0;
+            document.getElementById('crawl-forms').textContent = data.forms_found || 0;
+            break;
+
+        case 'finding':
+            addFinding(data.finding);
+            updateSeverityCounts(data.severity_counts);
+            document.getElementById('findings-total').textContent = data.findings_count || 0;
+            break;
+
+        case 'stage_changed':
+            document.getElementById('stage-text').textContent = data.stage;
+            break;
+
+        case 'progress':
+            updateProgress(data);
+            break;
+
+        case 'scan_complete':
+            onScanComplete(data);
+            break;
+
+        case 'scan_error':
+            onScanError(data);
+            break;
+
+        case 'scan_cancelled':
+            onScanCancelled();
+            break;
+    }
+}
+
+function updateProgress(data) {
+    if (data.crawl) {
+        document.getElementById('crawl-urls').textContent = data.crawl.urls_found || 0;
+        document.getElementById('crawl-forms').textContent = data.crawl.forms_found || 0;
+        document.getElementById('crawl-apis').textContent = data.crawl.apis_found || 0;
+    }
+    if (data.fuzz) {
+        document.getElementById('fuzz-tested').textContent = data.fuzz.endpoints_tested || 0;
+        document.getElementById('fuzz-total').textContent = data.fuzz.endpoints_total || 0;
+        document.getElementById('fuzz-requests').textContent = (data.fuzz.requests_sent || 0).toLocaleString();
+        document.getElementById('fuzz-rps').textContent = (data.fuzz.req_per_sec || 0).toFixed(1);
+
+        // Update progress bar
+        const tested = data.fuzz.endpoints_tested || 0;
+        const total = data.fuzz.endpoints_total || 1;
+        const pct = Math.min(Math.round((tested / total) * 100), 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('progress-percent').textContent = pct + '%';
+        document.getElementById('progress-label').textContent =
+            `${data.stage || 'Scanning'} — ${tested}/${total} endpoints`;
+    }
+    if (data.stage) {
+        document.getElementById('stage-text').textContent = data.stage;
+    }
+    if (data.severity_counts) {
+        updateSeverityCounts(data.severity_counts);
+    }
+    document.getElementById('findings-total').textContent = data.findings_count || 0;
+}
+
+function addFinding(finding) {
+    const feed = document.getElementById('findings-feed');
+    const empty = document.getElementById('findings-empty');
+    if (empty) empty.remove();
+
+    const sev = (finding.severity || 'info').toLowerCase();
+    const sevColors = {
+        critical: { emoji: '🔴', cls: 'badge-critical' },
+        high:     { emoji: '🟠', cls: 'badge-high' },
+        medium:   { emoji: '🟡', cls: 'badge-medium' },
+        low:      { emoji: '🔵', cls: 'badge-low' },
+        info:     { emoji: '⚪', cls: 'badge-info' },
+    };
+    const sc = sevColors[sev] || sevColors.info;
+
+    const item = document.createElement('div');
+    item.className = 'finding-item';
+    item.innerHTML = `
+        <div class="finding-sev">
+            <span class="badge ${sc.cls}">${sc.emoji} ${sev.toUpperCase()}</span>
+        </div>
+        <div class="finding-details">
+            <div class="finding-title">${escapeHtml(finding.title || 'Unknown')}</div>
+            <div class="finding-url">${escapeHtml(finding.url || '')}</div>
+        </div>
+    `;
+
+    feed.insertBefore(item, feed.firstChild);
+
+    // Keep max 50 items
+    while (feed.children.length > 50) {
+        feed.removeChild(feed.lastChild);
+    }
+}
+
+function updateSeverityCounts(counts) {
+    if (!counts) return;
+    for (const [sev, count] of Object.entries(counts)) {
+        const el = document.getElementById(`sev-${sev}`);
+        if (el) el.textContent = count;
+    }
+}
+
+function onScanComplete(data) {
+    scanComplete = true;
+    document.getElementById('stage-text').textContent = 'Complete ✓';
+    document.getElementById('stage-indicator').style.background = 'var(--status-complete)';
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('progress-percent').textContent = '100%';
+    document.getElementById('progress-label').textContent = 'Scan complete!';
+    document.getElementById('progress-fill').style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+
+    document.getElementById('btn-stop').classList.add('hidden');
+    document.getElementById('btn-report').classList.remove('hidden');
+    document.getElementById('scan-complete-card').classList.remove('hidden');
+
+    if (data.findings_count !== undefined) {
+        document.getElementById('findings-total').textContent = data.findings_count;
+    }
+
+    showToast(`Scan complete! Found ${data.findings_count || 0} vulnerabilities.`, 'success');
+}
+
+function onScanError(data) {
+    scanComplete = true;
+    document.getElementById('stage-text').textContent = 'Failed ✗';
+    document.getElementById('stage-indicator').style.background = 'var(--sev-critical)';
+    document.getElementById('btn-stop').classList.add('hidden');
+    showToast('Scan failed: ' + (data.error || 'Unknown error'), 'error');
+}
+
+function onScanCancelled() {
+    scanComplete = true;
+    document.getElementById('stage-text').textContent = 'Cancelled';
+    document.getElementById('stage-indicator').style.background = 'var(--status-cancelled)';
+    document.getElementById('btn-stop').classList.add('hidden');
+    document.getElementById('btn-report').classList.remove('hidden');
+    showToast('Scan cancelled.', 'info');
+}
+
+async function stopScan() {
+    if (!confirm('Are you sure you want to stop this scan?')) return;
+    try {
+        await fetch(`/api/scans/${SCAN_ID}/stop`, { method: 'POST' });
+    } catch (err) {
+        showToast('Failed to stop scan', 'error');
+    }
+}
+
+// Elapsed timer
+function updateElapsed() {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+    const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+    const s = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('hdr-elapsed').textContent = `${h}:${m}:${s}`;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Initialize
+connectWebSocket();
+elapsedTimer = setInterval(updateElapsed, 1000);
+
+{% if scan_data and scan_data.status == 'complete' %}
+scanComplete = true;
+onScanComplete({
+    findings_count: {{ scan_data.findings_count or 0 }},
+    risk_score: {{ scan_data.risk_score or 0 }}
+});
+{% endif %}
+</script>
+{% endblock %}

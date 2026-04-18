@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% set active_page = "templates" %}
+
+{% block title %}Templates — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1>📝 Fuzzing Templates</h1>
+            <p class="subtitle">Browse and manage the vulnerability detection templates used during scanning</p>
+        </div>
+    </div>
+</div>
+
+<!-- Template info banner -->
+<div class="alert alert-info mb-24">
+    <span class="alert-icon">💡</span>
+    <div>
+        <strong>What are templates?</strong> Templates define what vulnerabilities to test for and how to detect them.
+        Each template contains payloads (test inputs) and matchers (detection rules) for a specific vulnerability type.
+    </div>
+</div>
+
+{% if templates %}
+<div class="grid-auto" id="template-grid">
+    {% for tmpl in templates %}
+    {% set info = tmpl.get('info', {}) if tmpl.get('info') else {} %}
+    {% set sev = (info.get('severity', 'info') if info else tmpl.get('severity', 'info'))|string|lower %}
+    <div class="template-card" id="tmpl-{{ tmpl.get('id', loop.index) }}">
+        <div class="template-card-header">
+            <div>
+                <div class="template-name">{{ info.get('name', tmpl.get('name', tmpl.get('id', 'Unknown'))) }}</div>
+            </div>
+            <span class="badge badge-{{ sev }}">
+                {% if sev == 'critical' %}🔴{% elif sev == 'high' %}🟠{% elif sev == 'medium' %}🟡{% elif sev == 'low' %}🔵{% else %}⚪{% endif %}
+                {{ sev|upper }}
+            </span>
+        </div>
+
+        <p class="template-meta">
+            {{ info.get('description', tmpl.get('description', 'No description available.'))[:150] }}
+        </p>
+
+        <!-- Tags -->
+        <div class="template-tags mb-12">
+            {% set tags = info.get('tags', tmpl.get('tags', [])) %}
+            {% for tag in tags[:6] %}
+            <span class="tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+
+        <!-- Stats -->
+        <div class="flex items-center justify-between text-xs text-muted" style="border-top: 1px solid var(--border); padding-top: 12px;">
+            <span>
+                {% set payloads = tmpl.get('payloads', []) %}
+                {% if payloads is string %}
+                    📦 External payloads
+                {% else %}
+                    📦 {{ payloads|length }} payloads
+                {% endif %}
+            </span>
+            <span>🎯 {{ tmpl.get('matchers', [])|length }} matchers</span>
+            {% if tmpl.get('_filename') %}
+            <span class="text-mono">{{ tmpl._filename }}</span>
+            {% endif %}
+        </div>
+
+        <!-- CWE / OWASP -->
+        {% set cwe = info.get('cwe', tmpl.get('cwe', '')) %}
+        {% set owasp = info.get('owasp', tmpl.get('owasp', '')) %}
+        {% if cwe or owasp %}
+        <div class="flex gap-8 mt-8 text-xs">
+            {% if cwe %}<span style="color: var(--accent);">{{ cwe }}</span>{% endif %}
+            {% if owasp %}<span style="color: var(--text-muted);">{{ owasp }}</span>{% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Expandable YAML view -->
+        <details class="mt-12" style="border-top: 1px solid var(--border); padding-top: 12px;">
+            <summary style="cursor: pointer; font-size: 0.82rem; font-weight: 600; color: var(--accent);">
+                View Template YAML
+            </summary>
+            <pre class="evidence-block mt-8" style="font-size: 0.75rem; max-height: 300px; overflow-y: auto;">{{ tmpl|tojson(indent=2) }}</pre>
+        </details>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">📝</div>
+    <h3>No templates found</h3>
+    <p>No YAML templates were found in the templates/ directory. Make sure the templates directory exists in your project root.</p>
+</div>
+{% endif %}
+{% endblock %}

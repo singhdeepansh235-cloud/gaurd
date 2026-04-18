@@ -1,0 +1,60 @@
+# SSTI (Server-Side Template Injection) detection template
+
+id: ssti-basic
+name: Server-Side Template Injection (SSTI)
+severity: critical
+tags:
+  - ssti
+  - injection
+  - owasp-a03
+  - rce
+description: >
+  Detects SSTI by injecting arithmetic template expressions (e.g. {{7*191}})
+  into parameters and checking if the computed result (e.g. 1337) appears
+  in the response, indicating server-side template evaluation.
+references:
+  - https://portswigger.net/research/server-side-template-injection
+  - https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/18-Testing_for_Server-side_Template_Injection
+  - https://cwe.mitre.org/data/definitions/94.html
+cwe: CWE-94
+owasp: "A03:2021-Injection"
+remediation: >
+  Never pass user input directly into template rendering. Use a sandboxed
+  template engine and avoid user-controlled template strings entirely.
+
+target_params:
+  - query
+  - form
+  - json
+payloads: templates/payloads/ssti.txt
+stop_on_first_match: true
+matchers_condition: or
+
+matchers:
+  # Computation results — unique enough to avoid false positives
+  - type: word
+    part: body
+    words:
+      - "49"
+      - "7777777"
+    condition: or
+
+  # Template engine error messages
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "jinja2\\.exceptions"
+      - "UndefinedError"
+      - "TemplateSyntaxError.*?jinja"
+      - "Twig_Error_Syntax"
+      - "Twig\\\\Error\\\\SyntaxError"
+      - "FreeMarkerException"
+      - "freemarker\\.core\\."
+      - "freemarker\\.template\\."
+      - "org\\.apache\\.velocity"
+      - "VelocityException"
+      - "com\\.mitchellbosecke\\.pebble"
+      - "PebbleException"
+      - "org\\.thymeleaf\\.exceptions"
+      - "TemplateProcessingException"

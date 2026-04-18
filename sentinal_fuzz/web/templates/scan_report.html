@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% set active_page = "report" %}
+
+{% block title %}Scan Report — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1>📊 Scan Report</h1>
+            <p class="subtitle">
+                {{ scan_info.target if scan_info else '—' }} — {{ scan_info.profile if scan_info else 'standard' }} profile
+            </p>
+        </div>
+        <div class="flex gap-8">
+            <a href="/scan/{{ scan_id }}/live" class="btn btn-secondary btn-sm">← Live View</a>
+            <a href="/scans" class="btn btn-secondary btn-sm">📋 All Scans</a>
+        </div>
+    </div>
+</div>
+
+{% if scan_info %}
+<!-- Executive Summary -->
+<div class="grid-2 mb-24" style="grid-template-columns: 1fr 2fr;">
+    <!-- Risk Score -->
+    <div class="card text-center">
+        <h3 class="mb-16">Risk Score</h3>
+        <div class="risk-score-display">
+            {% set score = scan_info.risk_score|default(0)|int %}
+            <div class="risk-score-number" style="color: {% if score >= 70 %}var(--sev-critical){% elif score >= 40 %}var(--sev-high){% elif score >= 15 %}var(--sev-medium){% else %}var(--status-complete){% endif %};">
+                {{ score }}
+            </div>
+            <div class="risk-score-label" style="color: {% if score >= 70 %}var(--sev-critical){% elif score >= 40 %}var(--sev-high){% elif score >= 15 %}var(--sev-medium){% else %}var(--status-complete){% endif %};">
+                {% if score >= 70 %}CRITICAL{% elif score >= 40 %}HIGH{% elif score >= 15 %}MEDIUM{% else %}LOW{% endif %}
+            </div>
+        </div>
+        <div class="progress-bar mt-16" style="height: 10px;">
+            <div class="progress-fill" style="width: {{ score }}%; background: {% if score >= 70 %}linear-gradient(90deg, var(--sev-high), var(--sev-critical)){% elif score >= 40 %}linear-gradient(90deg, var(--sev-medium), var(--sev-high)){% elif score >= 15 %}linear-gradient(90deg, var(--sev-low), var(--sev-medium)){% else %}linear-gradient(90deg, var(--status-complete), #16a34a){% endif %};"></div>
+        </div>
+        <p class="text-xs text-muted mt-8">0 = No risk, 100 = Critical exposure</p>
+
+        <!-- Severity Chart -->
+        <div class="chart-container mt-20">
+            <canvas id="severity-chart"></canvas>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div>
+        <div class="report-metrics" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="metric-card">
+                <div class="metric-value">{{ scan_info.findings_count|default(0) }}</div>
+                <div class="metric-label">Total Findings</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ scan_info.endpoints_count|default(0) }}</div>
+                <div class="metric-label">Endpoints Scanned</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ "%.1f"|format(scan_info.duration_seconds|default(0)) }}s</div>
+                <div class="metric-label">Scan Duration</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">
+                    <span class="badge badge-{{ scan_info.status|default('complete') }}">{{ scan_info.status|default('complete') }}</span>
+                </div>
+                <div class="metric-label">Status</div>
+            </div>
+        </div>
+
+        <!-- Severity Breakdown -->
+        <div class="card mt-16">
+            <h4 class="mb-12">Severity Breakdown</h4>
+            {% set sev_counts = scan_info.severity_counts or {} %}
+            {% set sevs = [
+                ('critical', 'CRITICAL', '🔴', '--sev-critical'),
+                ('high', 'HIGH', '🟠', '--sev-high'),
+                ('medium', 'MEDIUM', '🟡', '--sev-medium'),
+                ('low', 'LOW', '🔵', '--sev-low'),
+                ('info', 'INFO', '⚪', '--sev-info')
+            ] %}
+            {% for key, label, emoji, color in sevs %}
+            {% set count = sev_counts.get(key, 0) if sev_counts is mapping else 0 %}
+            <div class="flex items-center justify-between" style="padding: 8px 0; border-bottom: 1px solid var(--border);">
+                <div class="flex items-center gap-8">
+                    <span>{{ emoji }}</span>
+                    <span style="font-weight: 600; color: var({{ color }});">{{ label }}</span>
+                </div>
+                <div class="flex items-center gap-12">
+                    <div class="progress-bar" style="width: 120px; height: 6px;">
+                        <div class="progress-fill" style="width: {% if scan_info.findings_count %}{{ (count / scan_info.findings_count * 100)|int }}{% else %}0{% endif %}%; background: var({{ color }});"></div>
+                    </div>
+                    <span style="font-weight: 700; min-width: 24px; text-align: right;">{{ count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Findings List -->
+<div class="mb-24">
+    <div class="flex items-center justify-between mb-16">
+        <h2>🔍 Findings ({{ findings|length }})</h2>
+        <div class="flex gap-8">
+            <select class="form-select" id="filter-severity" onchange="filterFindings()" style="width: 160px; padding: 6px 12px; font-size: 0.82rem;">
+                <option value="all">All Severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+                <option value="info">Info</option>
+            </select>
+            <input type="text" class="form-input" id="search-findings" placeholder="Search findings..." oninput="filterFindings()" style="width: 220px; padding: 6px 12px; font-size: 0.82rem;">
+        </div>
+    </div>
+
+    {% if findings %}
+    <div id="findings-list">
+        {% for finding in findings %}
+        {% set sev = finding.severity|default('info')|lower %}
+        <div class="finding-card" data-severity="{{ sev }}" data-title="{{ finding.title|default('')|lower }}" data-url="{{ finding.url|default('')|lower }}">
+            <div class="finding-card-header" onclick="toggleFinding(this)">
+                <span class="finding-card-toggle">▶</span>
+                <span class="badge badge-{{ sev }}">
+                    {% if sev == 'critical' %}🔴{% elif sev == 'high' %}🟠{% elif sev == 'medium' %}🟡{% elif sev == 'low' %}🔵{% else %}⚪{% endif %}
+                    {{ sev|upper }}
+                </span>
+                <span class="finding-card-title">{{ finding.title|default('Unknown Finding') }}</span>
+                <span class="text-xs text-mono text-muted truncate" style="max-width: 300px;">{{ finding.url|default('') }}</span>
+            </div>
+            <div class="finding-card-body">
+                <div class="finding-detail-grid">
+                    <span class="finding-detail-label">URL</span>
+                    <span class="finding-detail-value text-mono">{{ finding.url|default('—') }}</span>
+
+                    {% if finding.parameter %}
+                    <span class="finding-detail-label">Parameter</span>
+                    <span class="finding-detail-value text-mono">{{ finding.parameter }}</span>
+                    {% endif %}
+
+                    {% if finding.payload %}
+                    <span class="finding-detail-label">Payload</span>
+                    <span class="finding-detail-value text-mono" style="font-size: 0.82rem;">{{ finding.payload[:200] }}</span>
+                    {% endif %}
+
+                    {% if finding.cwe %}
+                    <span class="finding-detail-label">CWE</span>
+                    <span class="finding-detail-value">{{ finding.cwe }}</span>
+                    {% endif %}
+
+                    {% if finding.owasp %}
+                    <span class="finding-detail-label">OWASP</span>
+                    <span class="finding-detail-value">{{ finding.owasp }}</span>
+                    {% endif %}
+
+                    {% if finding.confidence is defined %}
+                    <span class="finding-detail-label">Confidence</span>
+                    <span class="finding-detail-value">{{ "%.0f"|format(finding.confidence * 100 if finding.confidence else 0) }}%</span>
+                    {% endif %}
+
+                    {% if finding.cvss_score is defined and finding.cvss_score %}
+                    <span class="finding-detail-label">CVSS Score</span>
+                    <span class="finding-detail-value" style="font-weight: 700;">{{ "%.1f"|format(finding.cvss_score) }}</span>
+                    {% endif %}
+                </div>
+
+                {% if finding.evidence %}
+                <div class="evidence-block">
+                    <strong style="color: var(--text-muted); font-size: 0.75rem;">EVIDENCE</strong><br>
+                    {{ finding.evidence[:500] }}
+                </div>
+                {% endif %}
+
+                {% if finding.remediation %}
+                <div class="remediation-box">
+                    <h4>✅ How to Fix</h4>
+                    <p>{{ finding.remediation }}</p>
+                </div>
+                {% endif %}
+
+                {% if finding.description %}
+                <div class="mt-12" style="padding: 12px 16px; background: var(--bg-primary); border-radius: var(--radius-md); border: 1px solid var(--border);">
+                    <strong style="color: var(--text-muted); font-size: 0.75rem;">WHAT THIS MEANS</strong>
+                    <p class="text-sm mt-8">{{ finding.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">✅</div>
+        <h3>No Vulnerabilities Found</h3>
+        <p>The scan completed without finding any security issues. Great job!</p>
+    </div>
+    {% endif %}
+</div>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">⏳</div>
+    <h3>Report Not Available</h3>
+    <p>This scan hasn't completed yet or no results are available.</p>
+    <a href="/scan/{{ scan_id }}/live" class="btn btn-primary">View Live Scan →</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleFinding(header) {
+    const card = header.closest('.finding-card');
+    card.classList.toggle('expanded');
+}
+
+function filterFindings() {
+    const severity = document.getElementById('filter-severity').value;
+    const search = document.getElementById('search-findings').value.toLowerCase();
+    const cards = document.querySelectorAll('.finding-card');
+
+    cards.forEach(card => {
+        const cardSev = card.dataset.severity;
+        const cardTitle = card.dataset.title;
+        const cardUrl = card.dataset.url;
+
+        const matchSev = severity === 'all' || cardSev === severity;
+        const matchSearch = !search || cardTitle.includes(search) || cardUrl.includes(search);
+
+        card.style.display = (matchSev && matchSearch) ? '' : 'none';
+    });
+}
+
+// Severity donut chart
+{% if scan_info %}
+const ctx = document.getElementById('severity-chart');
+if (ctx) {
+    const counts = {{ scan_info.severity_counts|tojson if scan_info.severity_counts else '{}' }};
+    const data = [
+        counts.critical || 0,
+        counts.high || 0,
+        counts.medium || 0,
+        counts.low || 0,
+        counts.info || 0,
+    ];
+
+    if (data.some(v => v > 0)) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Critical', 'High', 'Medium', 'Low', 'Info'],
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#6b7280'],
+                    borderColor: '#1a2035',
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: '#94a3b8',
+                            font: { family: 'Inter', size: 11 },
+                            padding: 12,
+                            usePointStyle: true,
+                            pointStyleWidth: 8,
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,69 @@
+# Open Redirect detection template
+
+id: open-redirect
+name: Open Redirect
+severity: medium
+tags:
+  - redirect
+  - owasp-a01
+  - client-side
+  - phishing
+description: >
+  Detects open redirect vulnerabilities by injecting an external URL
+  into redirect-related parameters and checking if the response issues
+  a 3xx redirect with a Location header pointing to the attacker domain.
+references:
+  - https://cwe.mitre.org/data/definitions/601.html
+  - https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html
+cwe: CWE-601
+owasp: "A01:2021-Broken Access Control"
+remediation: >
+  Validate redirect targets against a whitelist of allowed domains.
+  Avoid using user-supplied values in Location headers or meta-refresh tags.
+
+target_params:
+  - query
+  - form
+payloads:
+  - "https://evil.com"
+  - "//evil.com"
+  - "/\\evil.com"
+  - "https://evil.com%00.trusted.com"
+  - "https://trusted.com@evil.com"
+  - "//evil.com/%2F%2E%2E"
+  - "https://evil.com?trusted.com"
+  - "https://evil.com#trusted.com"
+  - "////evil.com"
+  - "https:///evil.com"
+stop_on_first_match: true
+matchers_condition: or
+
+matchers:
+  # Location header redirect to evil.com
+  - type: regex
+    part: header
+    condition: or
+    regex:
+      - "Location:\\s*https?://evil\\.com"
+      - "Location:\\s*//evil\\.com"
+
+  # Redirect status codes
+  - type: status
+    part: status
+    status:
+      - 301
+      - 302
+      - 303
+      - 307
+      - 308
+    condition: or
+
+  # JavaScript / meta-refresh redirect in body
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "window\\.location\\s*=\\s*[\"']https?://evil\\.com"
+      - "document\\.location\\s*=\\s*[\"']https?://evil\\.com"
+      - "location\\.href\\s*=\\s*[\"']https?://evil\\.com"
+      - "<meta\\s+http-equiv=[\"']refresh[\"']\\s+content=[\"']\\d+;\\s*url=https?://evil\\.com"

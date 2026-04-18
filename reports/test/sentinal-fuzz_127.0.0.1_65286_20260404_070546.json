@@ -1,0 +1,428 @@
+{
+  "schema_version": "1.0.0",
+  "generator": "sentinal-fuzz",
+  "metadata": {
+    "scan_id": "25d65b7197b84cb1",
+    "target": "http://127.0.0.1:65286",
+    "scanner_version": "0.1.0",
+    "scan_profile": "quick",
+    "start_time": "2026-04-04T07:05:42.798826",
+    "end_time": "2026-04-04T07:05:46.685199",
+    "duration_seconds": 3.886373
+  },
+  "summary": {
+    "total_findings": 11,
+    "severity_counts": {
+      "critical": 2,
+      "high": 3,
+      "medium": 0,
+      "low": 6,
+      "info": 0
+    },
+    "risk_score": 100,
+    "endpoints_discovered": 6,
+    "most_critical": {
+      "title": "Server-Side Template Injection (SSTI)",
+      "severity": "critical",
+      "url": "http://127.0.0.1:65286/search",
+      "parameter": "query:q"
+    }
+  },
+  "endpoints": [
+    {
+      "url": "http://127.0.0.1:65286/",
+      "method": "GET",
+      "params": {},
+      "forms": [],
+      "headers": {},
+      "cookies": {},
+      "source": "crawl",
+      "is_api": false,
+      "injectable_params": []
+    },
+    {
+      "url": "http://127.0.0.1:65286/search",
+      "method": "GET",
+      "params": {
+        "q": "test"
+      },
+      "forms": [
+        {
+          "name": "q",
+          "type": "text",
+          "value": "test",
+          "classification": "search_field"
+        }
+      ],
+      "headers": {},
+      "cookies": {},
+      "source": "form",
+      "is_api": false,
+      "injectable_params": [
+        "q",
+        "q"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:65286/search?q=test",
+      "method": "GET",
+      "params": {
+        "q": "test"
+      },
+      "forms": [],
+      "headers": {},
+      "cookies": {},
+      "source": "crawl",
+      "is_api": false,
+      "injectable_params": [
+        "q"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:65286/admin",
+      "method": "GET",
+      "params": {},
+      "forms": [],
+      "headers": {},
+      "cookies": {},
+      "source": "crawl",
+      "is_api": false,
+      "injectable_params": []
+    },
+    {
+      "url": "http://127.0.0.1:65286/login",
+      "method": "POST",
+      "params": {},
+      "forms": [
+        {
+          "name": "username",
+          "type": "text",
+          "value": "",
+          "classification": "generic_text"
+        },
+        {
+          "name": "password",
+          "type": "password",
+          "value": "",
+          "classification": "generic_text"
+        }
+      ],
+      "headers": {},
+      "cookies": {},
+      "source": "form",
+      "is_api": false,
+      "injectable_params": [
+        "username",
+        "password"
+      ]
+    },
+    {
+      "url": "http://127.0.0.1:65286/login",
+      "method": "GET",
+      "params": {},
+      "forms": [],
+      "headers": {},
+      "cookies": {},
+      "source": "crawl",
+      "is_api": false,
+      "injectable_params": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "e5a40356049f",
+      "title": "Server-Side Template Injection (SSTI)",
+      "severity": "critical",
+      "url": "http://127.0.0.1:65286/search",
+      "parameter": "query:q",
+      "payload": "${\"freemarker.template.utility.Execute\"?new()(\"id\")}",
+      "evidence": "regex match: freemarker.template.",
+      "cwe": "CWE-94",
+      "owasp": "A03:2021-Injection",
+      "remediation": "Never pass user input directly into template rendering. Use a sandboxed template engine (e.g. Jinja2 SandboxedEnvironment) and avoid user-controlled template strings entirely. Validate that input does not contain template syntax characters.",
+      "confidence": 0.6,
+      "template_id": "ssti-basic",
+      "timestamp": "2026-04-04T07:05:44.682967",
+      "request_evidence": {
+        "method": "GET",
+        "url": "http://127.0.0.1:65286/search?q=%24%7B%22freemarker.template.utility.Execute%22%3Fnew%28%29%28%22id%22%29%7D",
+        "request_headers": {},
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "server": "Werkzeug/3.1.4 Python/3.14.3",
+          "date": "Sat, 04 Apr 2026 01:35:44 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "487",
+          "connection": "close"
+        },
+        "response_body": "<!DOCTYPE html>\n<html>\n<head><title>Search Results</title></head>\n<body>\n    <h1>Search Results</h1>\n    <p>You searched for: ${\"freemarker.template.utility.Execute\"?new()(\"id\")}</p>\n    <form action=\"/search\" method=\"GET\">\n        <input type=\"text\" name=\"q\" value=\"${\"freemarker.template.utility.Execute\"?new()(\"id\")}\">\n        <button type=\"submit\">Search</button>\n    </form>\n    <p>No results found for <b>${\"freemarker.template.utility.Execute\"?new()(\"id\")}</b></p>\n</body>\n</html>",
+        "elapsed_ms": 49.11089999950491
+      },
+      "response_excerpt": "HTTP 200\n<!DOCTYPE html>\n<html>\n<head><title>Search Results</title></head>\n<body>\n    <h1>Search Results</h1>\n    <p>You searched for: ${\"freemarker.template.utility.Execute\"?new()(\"id\")}</p>\n    <form action=\"/search\" method=\"GET\">\n        <input type=\"text\" name=\"q\" value=\"${\"freemarker.template.utility.Execute\"?new()(\"id\")}\">\n        <button type=\"submit\">Search</button>\n    </form>\n    <p>No results found for <b>${\"freemarker.template.utility.Execute\"?new()(\"id\")}</b></p>\n</body>\n</html>"
+    },
+    {
+      "id": "d0aef398cb62",
+      "title": "SQL Injection — Error-Based",
+      "severity": "critical",
+      "url": "http://127.0.0.1:65286/login",
+      "parameter": "form:username",
+      "payload": "' OR '1'='1",
+      "evidence": "regex match: SQL syntax; check the manual\n    that corresponds to your MySQL",
+      "cwe": "CWE-89",
+      "owasp": "A03:2021-Injection",
+      "remediation": "Use parameterised queries (prepared statements) for all database access. Never concatenate user input into SQL strings. Apply least-privilege database accounts and disable verbose error messages in production.",
+      "confidence": 0.6,
+      "template_id": "sqli-error",
+      "timestamp": "2026-04-04T07:05:45.570786",
+      "request_evidence": {
+        "method": "POST",
+        "url": "http://127.0.0.1:65286/login",
+        "request_headers": {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "request_body": "username=%27+OR+%271%27%3D%271&password=",
+        "status_code": 500,
+        "response_headers": {
+          "server": "Werkzeug/3.1.4 Python/3.14.3",
+          "date": "Sat, 04 Apr 2026 01:35:45 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "374",
+          "connection": "close"
+        },
+        "response_body": "<!DOCTYPE html>\n<html>\n<head><title>Error</title></head>\n<body>\n    <h1>Database Error</h1>\n    <p>Error: You have an error in your SQL syntax; check the manual\n    that corresponds to your MySQL server version for the right syntax\n    to use near '' OR '1'='1' at line 1</p>\n    <p>Query: SELECT * FROM users WHERE username='' OR '1'='1' AND password=''</p>\n</body>\n</html>",
+        "elapsed_ms": 54.16710000281455
+      },
+      "response_excerpt": "HTTP 500\n<!DOCTYPE html>\n<html>\n<head><title>Error</title></head>\n<body>\n    <h1>Database Error</h1>\n    <p>Error: You have an error in your SQL syntax; check the manual\n    that corresponds to your MySQL server version for the right syntax\n    to use near '' OR '1'='1' at line 1</p>\n    <p>Query: SELECT * FROM users WHERE username='' OR '1'='1' AND password=''</p>\n</body>\n</html>"
+    },
+    {
+      "id": "06f46267091f",
+      "title": "Reflected Cross-Site Scripting",
+      "severity": "high",
+      "url": "http://127.0.0.1:65286/search",
+      "parameter": "query:q",
+      "payload": "<script>alert('XSS')</script>",
+      "evidence": "word match: …p>You searched for: <script>alert('XSS')</script></p>\n… | header Content-Type=",
+      "cwe": "CWE-79",
+      "owasp": "A03:2021-Injection",
+      "remediation": "Escape all user input before rendering it in HTML. Use your framework's built-in escaping functions (e.g. Jinja2 autoescape, React JSX). Never use innerHTML or dangerouslySetInnerHTML with user data. Implement a strict Content-Security-Policy header to mitigate impact even if a payload slips through.",
+      "confidence": 0.9,
+      "template_id": "xss-reflected",
+      "timestamp": "2026-04-04T07:05:44.738408",
+      "request_evidence": {
+        "method": "GET",
+        "url": "http://127.0.0.1:65286/search?q=%3Cscript%3Ealert%28%27XSS%27%29%3C%2Fscript%3E",
+        "request_headers": {},
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "server": "Werkzeug/3.1.4 Python/3.14.3",
+          "date": "Sat, 04 Apr 2026 01:35:44 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "418",
+          "connection": "close"
+        },
+        "response_body": "<!DOCTYPE html>\n<html>\n<head><title>Search Results</title></head>\n<body>\n    <h1>Search Results</h1>\n    <p>You searched for: <script>alert('XSS')</script></p>\n    <form action=\"/search\" method=\"GET\">\n        <input type=\"text\" name=\"q\" value=\"<script>alert('XSS')</script>\">\n        <button type=\"submit\">Search</button>\n    </form>\n    <p>No results found for <b><script>alert('XSS')</script></b></p>\n</body>\n</html>",
+        "elapsed_ms": 53.86690000159433
+      },
+      "response_excerpt": "HTTP 200\n<!DOCTYPE html>\n<html>\n<head><title>Search Results</title></head>\n<body>\n    <h1>Search Results</h1>\n    <p>You searched for: <script>alert('XSS')</script></p>\n    <form action=\"/search\" method=\"GET\">\n        <input type=\"text\" name=\"q\" value=\"<script>alert('XSS')</script>\">\n        <button type=\"submit\">Search</button>\n    </form>\n    <p>No results found for <b><script>alert('XSS')</script></b></p>\n</body>\n</html>"
+    },
+    {
+      "id": "a2d1d48f6d25",
+      "title": "Reflected Cross-Site Scripting",
+      "severity": "high",
+      "url": "http://127.0.0.1:65286/search?q=test",
+      "parameter": "query:q",
+      "payload": "<script>alert('XSS')</script>",
+      "evidence": "word match: …p>You searched for: <script>alert('XSS')</script></p>\n… | header Content-Type=",
+      "cwe": "CWE-79",
+      "owasp": "A03:2021-Injection",
+      "remediation": "Escape all user input before rendering it in HTML. Use your framework's built-in escaping functions (e.g. Jinja2 autoescape, React JSX). Never use innerHTML or dangerouslySetInnerHTML with user data. Implement a strict Content-Security-Policy header to mitigate impact even if a payload slips through.",
+      "confidence": 0.9,
+      "template_id": "xss-reflected",
+      "timestamp": "2026-04-04T07:05:45.328901",
+      "request_evidence": {
+        "method": "GET",
+        "url": "http://127.0.0.1:65286/search?q=%3Cscript%3Ealert%28%27XSS%27%29%3C%2Fscript%3E",
+        "request_headers": {},
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "server": "Werkzeug/3.1.4 Python/3.14.3",
+          "date": "Sat, 04 Apr 2026 01:35:45 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "418",
+          "connection": "close"
+        },
+        "response_body": "<!DOCTYPE html>\n<html>\n<head><title>Search Results</title></head>\n<body>\n    <h1>Search Results</h1>\n    <p>You searched for: <script>alert('XSS')</script></p>\n    <form action=\"/search\" method=\"GET\">\n        <input type=\"text\" name=\"q\" value=\"<script>alert('XSS')</script>\">\n        <button type=\"submit\">Search</button>\n    </form>\n    <p>No results found for <b><script>alert('XSS')</script></b></p>\n</body>\n</html>",
+        "elapsed_ms": 50.94390000158455
+      },
+      "response_excerpt": "HTTP 200\n<!DOCTYPE html>\n<html>\n<head><title>Search Results</title></head>\n<body>\n    <h1>Search Results</h1>\n    <p>You searched for: <script>alert('XSS')</script></p>\n    <form action=\"/search\" method=\"GET\">\n        <input type=\"text\" name=\"q\" value=\"<script>alert('XSS')</script>\">\n        <button type=\"submit\">Search</button>\n    </form>\n    <p>No results found for <b><script>alert('XSS')</script></b></p>\n</body>\n</html>"
+    },
+    {
+      "id": "2dd3e48966ed",
+      "title": "Reflected Cross-Site Scripting",
+      "severity": "high",
+      "url": "http://127.0.0.1:65286/login",
+      "parameter": "form:username",
+      "payload": "<script>alert('XSS')</script>",
+      "evidence": "word match: …ax\n    to use near '<script>alert('XSS')</script>' at … | header Content-Type=",
+      "cwe": "CWE-79",
+      "owasp": "A03:2021-Injection",
+      "remediation": "Escape all user input before rendering it in HTML. Use your framework's built-in escaping functions (e.g. Jinja2 autoescape, React JSX). Never use innerHTML or dangerouslySetInnerHTML with user data. Implement a strict Content-Security-Policy header to mitigate impact even if a payload slips through.",
+      "confidence": 0.9,
+      "template_id": "xss-reflected",
+      "timestamp": "2026-04-04T07:05:46.568481",
+      "request_evidence": {
+        "method": "POST",
+        "url": "http://127.0.0.1:65286/login",
+        "request_headers": {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "request_body": "username=%3Cscript%3Ealert%28%27XSS%27%29%3C%2Fscript%3E&password=",
+        "status_code": 500,
+        "response_headers": {
+          "server": "Werkzeug/3.1.4 Python/3.14.3",
+          "date": "Sat, 04 Apr 2026 01:35:46 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "410",
+          "connection": "close"
+        },
+        "response_body": "<!DOCTYPE html>\n<html>\n<head><title>Error</title></head>\n<body>\n    <h1>Database Error</h1>\n    <p>Error: You have an error in your SQL syntax; check the manual\n    that corresponds to your MySQL server version for the right syntax\n    to use near '<script>alert('XSS')</script>' at line 1</p>\n    <p>Query: SELECT * FROM users WHERE username='<script>alert('XSS')</script>' AND password=''</p>\n</body>\n</html>",
+        "elapsed_ms": 63.69200000335695
+      },
+      "response_excerpt": "HTTP 500\n<!DOCTYPE html>\n<html>\n<head><title>Error</title></head>\n<body>\n    <h1>Database Error</h1>\n    <p>Error: You have an error in your SQL syntax; check the manual\n    that corresponds to your MySQL server version for the right syntax\n    to use near '<script>alert('XSS')</script>' at line 1</p>\n    <p>Query: SELECT * FROM users WHERE username='<script>alert('XSS')</script>' AND password=''</p>\n</body>\n</html>"
+    },
+    {
+      "id": "c0d85b0491e2",
+      "title": "Missing Content-Security-Policy Header",
+      "severity": "low",
+      "url": "http://127.0.0.1:65286/",
+      "parameter": "",
+      "payload": "",
+      "evidence": "No Content-Security-Policy header in response",
+      "cwe": "CWE-693",
+      "owasp": "A05:2021-Security Misconfiguration",
+      "remediation": "Add a Content-Security-Policy header to restrict which sources of content the browser may load. Start with a restrictive policy and relax as needed.",
+      "confidence": 0.9,
+      "template_id": "header-checker",
+      "timestamp": "2026-04-04T07:05:43.472831",
+      "request_evidence": null,
+      "response_excerpt": ""
+    },
+    {
+      "id": "8e7005b372c3",
+      "title": "Missing Content-Security-Policy Header",
+      "severity": "low",
+      "url": "http://127.0.0.1:65286/search",
+      "parameter": "",
+      "payload": "",
+      "evidence": "No Content-Security-Policy header in response",
+      "cwe": "CWE-693",
+      "owasp": "A05:2021-Security Misconfiguration",
+      "remediation": "Add a Content-Security-Policy header to restrict which sources of content the browser may load. Start with a restrictive policy and relax as needed.",
+      "confidence": 0.9,
+      "template_id": "header-checker",
+      "timestamp": "2026-04-04T07:05:43.551880",
+      "request_evidence": null,
+      "response_excerpt": ""
+    },
+    {
+      "id": "b4fbb321d669",
+      "title": "Missing Content-Security-Policy Header",
+      "severity": "low",
+      "url": "http://127.0.0.1:65286/search?q=test",
+      "parameter": "",
+      "payload": "",
+      "evidence": "No Content-Security-Policy header in response",
+      "cwe": "CWE-693",
+      "owasp": "A05:2021-Security Misconfiguration",
+      "remediation": "Add a Content-Security-Policy header to restrict which sources of content the browser may load. Start with a restrictive policy and relax as needed.",
+      "confidence": 0.9,
+      "template_id": "header-checker",
+      "timestamp": "2026-04-04T07:05:44.796928",
+      "request_evidence": null,
+      "response_excerpt": ""
+    },
+    {
+      "id": "5d92dd4ad213",
+      "title": "Missing Content-Security-Policy Header",
+      "severity": "low",
+      "url": "http://127.0.0.1:65286/admin",
+      "parameter": "",
+      "payload": "",
+      "evidence": "No Content-Security-Policy header in response",
+      "cwe": "CWE-693",
+      "owasp": "A05:2021-Security Misconfiguration",
+      "remediation": "Add a Content-Security-Policy header to restrict which sources of content the browser may load. Start with a restrictive policy and relax as needed.",
+      "confidence": 0.9,
+      "template_id": "header-checker",
+      "timestamp": "2026-04-04T07:05:45.396804",
+      "request_evidence": null,
+      "response_excerpt": ""
+    },
+    {
+      "id": "800eb63a3658",
+      "title": "Missing Content-Security-Policy Header",
+      "severity": "low",
+      "url": "http://127.0.0.1:65286/login",
+      "parameter": "",
+      "payload": "",
+      "evidence": "No Content-Security-Policy header in response",
+      "cwe": "CWE-693",
+      "owasp": "A05:2021-Security Misconfiguration",
+      "remediation": "Add a Content-Security-Policy header to restrict which sources of content the browser may load. Start with a restrictive policy and relax as needed.",
+      "confidence": 0.9,
+      "template_id": "header-checker",
+      "timestamp": "2026-04-04T07:05:45.486494",
+      "request_evidence": null,
+      "response_excerpt": ""
+    },
+    {
+      "id": "aab54b0bd10b",
+      "title": "Missing Security Headers",
+      "severity": "low",
+      "url": "http://127.0.0.1:65286/",
+      "parameter": "n/a",
+      "payload": "(passive check)",
+      "evidence": "header Content-Security-Policy= | header Strict-Transport-Security= | header X-Frame-Options= | header X-Content-Type-Options= | header Referrer-Policy=",
+      "cwe": "CWE-693",
+      "owasp": "A05:2021-Security Misconfiguration",
+      "remediation": "Configure the web server or application framework to include the following response headers: Content-Security-Policy, Strict-Transport-Security (with includeSubDomains and a long max-age), X-Frame-Options (DENY or SAMEORIGIN), X-Content-Type-Options (nosniff), Referrer-Policy, and Permissions-Policy.",
+      "confidence": 0.9,
+      "template_id": "security-headers",
+      "timestamp": "2026-04-04T07:05:43.486288",
+      "request_evidence": {
+        "method": "GET",
+        "url": "http://127.0.0.1:65286/",
+        "request_headers": {},
+        "request_body": null,
+        "status_code": 200,
+        "response_headers": {
+          "server": "Werkzeug/3.1.4 Python/3.14.3",
+          "date": "Sat, 04 Apr 2026 01:35:43 GMT",
+          "content-type": "text/html; charset=utf-8",
+          "content-length": "341",
+          "connection": "close"
+        },
+        "response_body": "<!DOCTYPE html>\n<html>\n<head><title>Test App</title></head>\n<body>\n    <h1>Vulnerable Test Application</h1>\n    <ul>\n        <li><a href=\"/search?q=test\">Search</a></li>\n        <li><a href=\"/admin\">Admin Panel</a></li>\n        <li><a href=\"/login\">Login</a></li>\n        <li><a href=\"/api/users\">API Users</a></li>\n    </ul>\n</body>\n</html>",
+        "elapsed_ms": 12.92749999993248
+      },
+      "response_excerpt": "HTTP 200\n<!DOCTYPE html>\n<html>\n<head><title>Test App</title></head>\n<body>\n    <h1>Vulnerable Test Application</h1>\n    <ul>\n        <li><a href=\"/search?q=test\">Search</a></li>\n        <li><a href=\"/admin\">Admin Panel</a></li>\n        <li><a href=\"/login\">Login</a></li>\n        <li><a href=\"/api/users\">API Users</a></li>\n    </ul>\n</body>\n</html>"
+    }
+  ],
+  "stats": {
+    "total_requests": 246,
+    "urls_crawled": 6,
+    "endpoints_found": 6,
+    "templates_run": 0,
+    "findings_by_severity": {
+      "critical": 2,
+      "high": 3,
+      "medium": 0,
+      "low": 6,
+      "info": 0
+    },
+    "requests_per_second": 63.29809310634877
+  }
+}

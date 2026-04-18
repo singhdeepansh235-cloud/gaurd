@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% set active_page = "history" %}
+
+{% block title %}Scan History — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1>📋 Scan History</h1>
+            <p class="subtitle">View and manage all your past security scans</p>
+        </div>
+        <a href="/scan/new" class="btn btn-primary">🎯 New Scan</a>
+    </div>
+</div>
+
+{% if scans %}
+<!-- Filters -->
+<div class="card mb-20">
+    <div class="flex items-center gap-16 flex-wrap">
+        <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
+            <input type="text" class="form-input" id="search-scans" placeholder="🔍 Search by target URL..." oninput="filterScans()">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <select class="form-select" id="filter-status" onchange="filterScans()" style="width: 160px;">
+                <option value="all">All Status</option>
+                <option value="running">Running</option>
+                <option value="complete">Complete</option>
+                <option value="failed">Failed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Scans Table -->
+<div class="table-wrap">
+    <table class="table" id="scans-table">
+        <thead>
+            <tr>
+                <th>Target</th>
+                <th>Profile</th>
+                <th>Status</th>
+                <th>Findings</th>
+                <th>Risk</th>
+                <th>Duration</th>
+                <th>Date</th>
+                <th style="text-align: right;">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="scans-tbody">
+            {% for scan in scans %}
+            <tr class="link-row" data-target="{{ scan.target|lower }}" data-status="{{ scan.status }}" id="history-row-{{ scan.id }}">
+                <td>
+                    <div class="flex items-center gap-8">
+                        {% if scan.status == 'running' %}<div class="scan-running-indicator"></div>{% endif %}
+                        <span class="text-mono text-sm" style="color: var(--text-primary); font-weight: 500;">{{ scan.target }}</span>
+                    </div>
+                </td>
+                <td><span class="text-sm">{{ scan.profile }}</span></td>
+                <td>
+                    <span class="badge badge-{{ scan.status }}">{{ scan.status }}</span>
+                </td>
+                <td style="font-weight: 700;">{{ scan.findings_count or 0 }}</td>
+                <td>
+                    {% set rs = scan.risk_score|default(0)|int %}
+                    <span style="color: {% if rs >= 70 %}var(--sev-critical){% elif rs >= 40 %}var(--sev-high){% elif rs >= 15 %}var(--sev-medium){% else %}var(--status-complete){% endif %}; font-weight: 700;">
+                        {{ rs }}/100
+                    </span>
+                </td>
+                <td class="text-muted text-sm">{{ "%.1f"|format(scan.duration_seconds or 0) }}s</td>
+                <td class="text-muted text-sm">{{ scan.created_at[:16] if scan.created_at else '—' }}</td>
+                <td>
+                    <div class="actions">
+                        {% if scan.status == 'running' %}
+                        <a href="/scan/{{ scan.id }}/live" class="btn btn-ghost btn-sm">📡 Live</a>
+                        {% endif %}
+                        {% if scan.status == 'complete' %}
+                        <a href="/scan/{{ scan.id }}/report" class="btn btn-ghost btn-sm">📊 Report</a>
+                        {% endif %}
+                        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); deleteScan('{{ scan.id }}')" style="color: var(--sev-critical);">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">📋</div>
+    <h3>No scan history</h3>
+    <p>You haven't run any scans yet. Start your first scan to see results here.</p>
+    <a href="/scan/new" class="btn btn-primary">🎯 Start First Scan</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterScans() {
+    const search = document.getElementById('search-scans').value.toLowerCase();
+    const status = document.getElementById('filter-status').value;
+    const rows = document.querySelectorAll('#scans-tbody tr');
+
+    rows.forEach(row => {
+        const target = row.dataset.target || '';
+        const rowStatus = row.dataset.status || '';
+        const matchSearch = !search || target.includes(search);
+        const matchStatus = status === 'all' || rowStatus === status;
+        row.style.display = (matchSearch && matchStatus) ? '' : 'none';
+    });
+}
+
+async function deleteScan(scanId) {
+    if (!confirm('Delete this scan? This cannot be undone.')) return;
+    try {
+        const res = await fetch(`/api/scans/${scanId}`, { method: 'DELETE' });
+        if (res.ok) {
+            const row = document.getElementById(`history-row-${scanId}`);
+            if (row) {
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateX(30px)';
+                setTimeout(() => {
+                    row.remove();
+                    // If no rows left, reload to show empty state
+                    const tbody = document.getElementById('scans-tbody');
+                    if (tbody && tbody.children.length === 0) {
+                        window.location.reload();
+                    }
+                }, 300);
+            }
+            showToast('Scan deleted successfully', 'success');
+        } else {
+            const err = await res.json().catch(() => ({}));
+            showToast(err.detail || 'Failed to delete scan', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,75 @@
+# Sensitive Data Exposure — passive detection template
+
+id: sensitive-exposure
+name: Sensitive Data Exposure in Responses
+severity: medium
+tags:
+  - exposure
+  - information-disclosure
+  - owasp-a01
+  - passive
+description: >
+  Passively scans response bodies for indicators of sensitive data exposure
+  including API keys (AWS, Google, GitHub, Stripe, Slack), stack traces
+  (Python, Java, PHP, .NET, Node.js), private keys, internal IP addresses,
+  and database connection strings.
+references:
+  - https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage
+  - https://cwe.mitre.org/data/definitions/200.html
+cwe: CWE-200
+owasp: "A01:2021-Broken Access Control"
+remediation: >
+  Remove API keys and secrets from responses. Disable debug mode and
+  verbose error pages in production. Scrub internal IPs and stack traces
+  from all error responses.
+
+target_params: []
+payloads: []
+stop_on_first_match: false
+matchers_condition: or
+
+matchers:
+  # API keys and tokens
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "AKIA[0-9A-Z]{16}"
+      - "AIza[0-9A-Za-z\\-_]{35}"
+      - "ghp_[0-9A-Za-z]{36}"
+      - "gho_[0-9A-Za-z]{36}"
+      - "sk_live_[0-9a-zA-Z]{24,}"
+      - "xox[bpors]-[0-9a-zA-Z]{10,48}"
+      - "-----BEGIN\\s(?:RSA\\s|EC\\s|DSA\\s|OPENSSH\\s)?PRIVATE\\sKEY-----"
+
+  # Stack traces
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "Traceback \\(most recent call last\\)"
+      - "File \".*?\", line \\d+"
+      - "at\\s+[\\w\\.$]+\\([\\w]+\\.java:\\d+\\)"
+      - "java\\.lang\\.\\w+Exception"
+      - "Exception in thread \""
+      - "Fatal error:.*?on line \\d+"
+      - "Stack trace:.*?#\\d+"
+      - "System\\.\\w+Exception"
+      - "Server Error in '/' Application"
+
+  # Internal IPs
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "(?:^|[^0-9])10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?:[^0-9]|$)"
+      - "(?:^|[^0-9])192\\.168\\.\\d{1,3}\\.\\d{1,3}(?:[^0-9]|$)"
+      - "(?:^|[^0-9])172\\.(?:1[6-9]|2\\d|3[01])\\.\\d{1,3}\\.\\d{1,3}(?:[^0-9]|$)"
+
+  # Database connection strings
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "(?:jdbc|mysql|postgresql|mongodb|redis|amqp)://[^\\s<>\"']+"
+      - "Server=.*?;Database=.*?;(?:User\\sId|Uid)="

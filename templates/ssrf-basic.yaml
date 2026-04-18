@@ -1,0 +1,63 @@
+# SSRF (Server-Side Request Forgery) detection template
+
+id: ssrf-basic
+name: Server-Side Request Forgery (SSRF)
+severity: high
+tags:
+  - ssrf
+  - owasp-a10
+  - server-side
+description: >
+  Detects SSRF by injecting URLs pointing to localhost, internal networks,
+  and cloud metadata endpoints, then matching internal service content or
+  error messages revealing internal resolution in the response.
+references:
+  - https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+  - https://cwe.mitre.org/data/definitions/918.html
+cwe: CWE-918
+owasp: "A10:2021-SSRF"
+remediation: >
+  Validate and whitelist destination URLs. Block requests to private/internal
+  IP ranges and cloud metadata endpoints on the server side.
+
+target_params:
+  - query
+  - form
+  - json
+payloads: templates/payloads/ssrf.txt
+stop_on_first_match: true
+matchers_condition: or
+
+matchers:
+  # AWS metadata response
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "ami-id"
+      - "instance-id"
+      - "iam/security-credentials"
+      - "AccessKeyId"
+      - "SecretAccessKey"
+      - "computeMetadata"
+      - "droplet_id"
+
+  # Internal server banners
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "<title>(?:Dashboard|Apache Tomcat|Welcome to nginx|IIS Windows Server)</title>"
+      - "phpinfo\\(\\)"
+      - "Server at .*? Port \\d+"
+
+  # Error messages leaking internal info
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "Connection refused.*?127\\.0\\.0\\.1"
+      - "couldn't connect to host"
+      - "getaddrinfo.*?failed"
+      - "Name or service not known"
+      - "No route to host"

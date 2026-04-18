@@ -1,0 +1,53 @@
+# Path Traversal / Local File Inclusion (LFI) detection template
+
+id: path-traversal
+name: Path Traversal / Local File Inclusion
+severity: high
+tags:
+  - lfi
+  - path-traversal
+  - owasp-a01
+  - file-access
+description: >
+  Detects path traversal vulnerabilities by injecting directory traversal
+  sequences (../) targeting well-known system files (/etc/passwd, win.ini)
+  and matching their content signatures in the response.
+references:
+  - https://owasp.org/www-community/attacks/Path_Traversal
+  - https://cwe.mitre.org/data/definitions/22.html
+cwe: CWE-22
+owasp: "A01:2021-Broken Access Control"
+remediation: >
+  Validate and sanitise file path input. Use a whitelist of allowed files.
+  Run the application with least-privilege filesystem permissions.
+
+target_params:
+  - query
+  - form
+payloads: templates/payloads/path_traversal.txt
+stop_on_first_match: true
+matchers_condition: or
+
+matchers:
+  # Linux /etc/passwd signatures
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "root:x:0:0:"
+      - "root:.*?:0:0:"
+      - "daemon:.*?:1:1:"
+      - "bin:.*?:2:2:"
+      - "nobody:.*?:\\d+:\\d+:"
+      - "127\\.0\\.0\\.1\\s+localhost"
+
+  # Windows win.ini / boot.ini signatures
+  - type: regex
+    part: body
+    condition: or
+    regex:
+      - "\\[fonts\\]"
+      - "\\[extensions\\]"
+      - "\\[mci extensions\\]"
+      - "\\[boot loader\\]"
+      - "\\[operating systems\\]"

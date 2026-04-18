@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% set active_page = "scan_new" %}
+
+{% block title %}New Scan — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🎯 New Scan</h1>
+    <p class="subtitle">Configure and launch a security scan against your target</p>
+</div>
+
+<form id="scan-form" onsubmit="return submitScan(event)">
+    <!-- Target URL -->
+    <div class="card mb-20">
+        <h3 class="mb-16">Target Configuration</h3>
+        <div class="form-group">
+            <label class="form-label">
+                Target URL <span class="required">*</span>
+            </label>
+            <input type="url"
+                   class="form-input"
+                   id="scan-target"
+                   name="target"
+                   placeholder="https://example.com"
+                   required
+                   style="font-size: 1.05rem; padding: 14px 18px;">
+            <p class="form-hint">The URL of the web application to scan. Must include the protocol (http:// or https://).</p>
+        </div>
+        <div class="mt-12">
+            <p class="text-xs text-muted mb-8">Quick fill — Practice targets:</p>
+            <div class="flex gap-8 flex-wrap">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://127.0.0.1:8899'" style="font-size: 0.75rem;">🧪 Test Server</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:3000'" style="font-size: 0.75rem;">🧃 Juice Shop</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:4280'" style="font-size: 0.75rem;">🕸️ DVWA</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:8888/WebGoat'" style="font-size: 0.75rem;">🐐 WebGoat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scan Profile -->
+    <div class="card mb-20">
+        <h3 class="mb-16">Scan Profile</h3>
+        <p class="text-sm text-muted mb-16">Choose how thorough the scan should be. A deeper profile finds more vulnerabilities but takes longer.</p>
+
+        <div class="radio-cards">
+            <label class="radio-card">
+                <input type="radio" name="scan_profile" value="quick" id="profile-quick">
+                <div class="radio-card-body">
+                    <div style="font-size: 1.5rem; margin-bottom: 8px;">⚡</div>
+                    <div class="radio-card-title">Quick</div>
+                    <div class="radio-card-desc">Fast surface-level scan. Depth: 2, ~2 min</div>
+                </div>
+            </label>
+            <label class="radio-card">
+                <input type="radio" name="scan_profile" value="standard" checked id="profile-standard">
+                <div class="radio-card-body">
+                    <div style="font-size: 1.5rem; margin-bottom: 8px;">🔍</div>
+                    <div class="radio-card-title">Standard</div>
+                    <div class="radio-card-desc">Balanced scan. Depth: 3, ~5 min</div>
+                </div>
+            </label>
+            <label class="radio-card">
+                <input type="radio" name="scan_profile" value="thorough" id="profile-thorough">
+                <div class="radio-card-body">
+                    <div style="font-size: 1.5rem; margin-bottom: 8px;">🔬</div>
+                    <div class="radio-card-title">Thorough</div>
+                    <div class="radio-card-desc">Deep comprehensive scan. Depth: 5, ~15 min</div>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <!-- Advanced Settings (collapsible) -->
+    <div class="card mb-20">
+        <div class="flex items-center justify-between" style="cursor: pointer;" onclick="toggleAdvanced()">
+            <h3 class="flex items-center gap-8">
+                <span id="advanced-toggle-icon">▶</span>
+                Advanced Settings
+            </h3>
+            <span class="badge badge-info">Optional</span>
+        </div>
+
+        <div id="advanced-settings" class="hidden mt-20">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Crawl Depth</label>
+                    <input type="number" class="form-input" id="scan-depth" name="depth" min="1" max="10" placeholder="Auto (from profile)">
+                    <p class="form-hint">How many levels deep to crawl. Higher = more thorough but slower.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Concurrency</label>
+                    <input type="number" class="form-input" id="scan-concurrency" name="concurrency" min="1" max="50" placeholder="Auto (from profile)">
+                    <p class="form-hint">Number of concurrent requests. Higher = faster but more aggressive.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Request Timeout (seconds)</label>
+                    <input type="number" class="form-input" id="scan-timeout" name="timeout" min="1" max="60" placeholder="10">
+                    <p class="form-hint">How long to wait for each HTTP response.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rate Limit (req/sec)</label>
+                    <input type="number" class="form-input" id="scan-rate" name="rate_limit" min="1" max="200" placeholder="50">
+                    <p class="form-hint">Maximum requests per second. Lower = gentler on the target.</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Authentication Cookie</label>
+                <input type="text" class="form-input" id="scan-cookie" name="auth_cookie"
+                       placeholder="sessionid=abc123; token=xyz">
+                <p class="form-hint">Cookie header value for authenticated scanning.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Authentication Header</label>
+                <input type="text" class="form-input" id="scan-header" name="auth_header"
+                       placeholder="Authorization: Bearer eyJ...">
+                <p class="form-hint">Custom header for authenticated scanning (e.g., Bearer token).</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Proxy URL</label>
+                <input type="text" class="form-input" id="scan-proxy" name="proxy"
+                       placeholder="http://127.0.0.1:8080">
+                <p class="form-hint">Route all scanner traffic through a proxy (e.g., Burp Suite).</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Exclude Patterns</label>
+                <input type="text" class="form-input" id="scan-exclude" name="exclude_patterns"
+                       placeholder="/logout, /admin, *.pdf">
+                <p class="form-hint">Comma-separated list of URL patterns to skip during crawling.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legal Warning -->
+    <div class="alert alert-warning mb-20">
+        <span class="alert-icon">⚠️</span>
+        <div>
+            <strong>Legal Notice:</strong> Only scan web applications that you own or have explicit written
+            permission to test. Unauthorized scanning may violate laws in your jurisdiction.
+        </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="flex gap-12">
+        <button type="submit" class="btn btn-primary btn-lg" id="submit-scan-btn">
+            🚀 Start Scan
+        </button>
+        <a href="/" class="btn btn-secondary btn-lg">Cancel</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let advancedVisible = false;
+
+function toggleAdvanced() {
+    advancedVisible = !advancedVisible;
+    const el = document.getElementById('advanced-settings');
+    const icon = document.getElementById('advanced-toggle-icon');
+    if (advancedVisible) {
+        el.classList.remove('hidden');
+        icon.textContent = '▼';
+    } else {
+        el.classList.add('hidden');
+        icon.textContent = '▶';
+    }
+}
+
+async function submitScan(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submit-scan-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin">⏳</span> Starting Scan...';
+
+    const target = document.getElementById('scan-target').value.trim();
+    const profile = document.querySelector('input[name="scan_profile"]:checked').value;
+
+    const body = { target, scan_profile: profile };
+
+    // Collect advanced settings
+    const depth = document.getElementById('scan-depth').value;
+    const concurrency = document.getElementById('scan-concurrency').value;
+    const timeout = document.getElementById('scan-timeout').value;
+    const rate = document.getElementById('scan-rate').value;
+    const cookie = document.getElementById('scan-cookie').value.trim();
+    const header = document.getElementById('scan-header').value.trim();
+    const proxy = document.getElementById('scan-proxy').value.trim();
+    const exclude = document.getElementById('scan-exclude').value.trim();
+
+    if (depth) body.depth = parseInt(depth);
+    if (concurrency) body.concurrency = parseInt(concurrency);
+    if (timeout) body.timeout = parseInt(timeout);
+    if (rate) body.rate_limit = parseInt(rate);
+    if (cookie) body.auth_cookie = cookie;
+    if (header) body.auth_header = header;
+    if (proxy) body.proxy = proxy;
+    if (exclude) body.exclude_patterns = exclude.split(',').map(s => s.trim()).filter(Boolean);
+
+    try {
+        const res = await fetch('/api/scans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            showToast(err.detail || 'Failed to start scan', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '🚀 Start Scan';
+            return false;
+        }
+
+        const data = await res.json();
+        showToast('Scan started!', 'success');
+        window.location.href = `/scan/${data.scan_id}/live`;
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '🚀 Start Scan';
+    }
+    return false;
+}
+</script>
+{% endblock %}

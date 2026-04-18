@@ -1,0 +1,23 @@
+
+============================================================
+  [*] Sentinal-Fuzz Web Interface
+============================================================
+  Open in browser: http://127.0.0.1:8080
+============================================================
+
+INFO:     127.0.0.1:63501 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56741 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56741 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56741 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49256 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49256 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49256 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49256 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63337 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64022 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60135 - "GET /phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60135 - "GET /static/css/main.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58038 - "GET /static/js/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61225 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61983 - "POST /api/phishing-check HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61113 - "POST /api/phishing-check HTTP/1.1" 200 OK

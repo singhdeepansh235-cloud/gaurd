@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% set active_page = "settings" %}
+
+{% block title %}Settings — Sentinal-Fuzz{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>⚙️ Settings</h1>
+    <p class="subtitle">Configure default scanning behavior and application preferences</p>
+</div>
+
+<form id="settings-form" onsubmit="return saveSettings(event)">
+    <!-- Scan Defaults -->
+    <div class="settings-section">
+        <h3>🔍 Scan Defaults</h3>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">Default Profile</label>
+                <select class="form-select" id="setting-default-profile" name="default_profile">
+                    <option value="quick" {% if settings.get('default_profile') == 'quick' %}selected{% endif %}>Quick</option>
+                    <option value="standard" {% if settings.get('default_profile', 'standard') == 'standard' %}selected{% endif %}>Standard</option>
+                    <option value="thorough" {% if settings.get('default_profile') == 'thorough' %}selected{% endif %}>Thorough</option>
+                </select>
+                <p class="form-hint">The profile pre-selected when starting a new scan.</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Default Rate Limit (req/sec)</label>
+                <input type="number" class="form-input" id="setting-rate-limit" name="default_rate_limit"
+                       value="{{ settings.get('default_rate_limit', '50') }}" min="1" max="200">
+                <p class="form-hint">Default maximum requests per second.</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Default Proxy</label>
+            <input type="text" class="form-input" id="setting-proxy" name="default_proxy"
+                   value="{{ settings.get('default_proxy', '') }}" placeholder="http://127.0.0.1:8080">
+            <p class="form-hint">Default proxy for all scans (e.g., for Burp Suite integration).</p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Output Directory</label>
+            <input type="text" class="form-input" id="setting-output-dir" name="output_dir"
+                   value="{{ settings.get('output_dir', 'reports') }}" placeholder="reports">
+            <p class="form-hint">Directory where scan reports are saved.</p>
+        </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class="settings-section">
+        <h3>🎨 Appearance</h3>
+
+        <div class="form-group">
+            <label class="toggle">
+                <input type="checkbox" id="setting-dark-mode" name="dark_mode"
+                       {% if settings.get('dark_mode', 'true') == 'true' %}checked{% endif %}>
+                <span class="toggle-track"></span>
+                <span>Dark Mode (enabled by default)</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- About -->
+    <div class="settings-section">
+        <h3>ℹ️ About</h3>
+        <div class="finding-detail-grid" style="grid-template-columns: 140px 1fr;">
+            <span class="finding-detail-label">Version</span>
+            <span class="finding-detail-value">0.1.0 (Alpha)</span>
+            <span class="finding-detail-label">Scanner</span>
+            <span class="finding-detail-value">Sentinal-Fuzz DAST Scanner</span>
+            <span class="finding-detail-label">License</span>
+            <span class="finding-detail-value">MIT</span>
+            <span class="finding-detail-label">Repository</span>
+            <span class="finding-detail-value"><a href="https://github.com/sentinal-fuzz" target="_blank">GitHub →</a></span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg" id="save-settings-btn">
+        💾 Save Settings
+    </button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function saveSettings(e) {
+    e.preventDefault();
+    const btn = document.getElementById('save-settings-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin">⏳</span> Saving...';
+
+    const settings = {};
+    settings.default_profile = document.getElementById('setting-default-profile').value;
+    settings.default_rate_limit = document.getElementById('setting-rate-limit').value;
+    settings.default_proxy = document.getElementById('setting-proxy').value;
+    settings.output_dir = document.getElementById('setting-output-dir').value;
+    settings.dark_mode = document.getElementById('setting-dark-mode').checked ? 'true' : 'false';
+
+    try {
+        const res = await fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ settings }),
+        });
+
+        if (res.ok) {
+            showToast('Settings saved!', 'success');
+        } else {
+            showToast('Failed to save settings', 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '💾 Save Settings';
+    return false;
+}
+</script>
+{% endblock %}

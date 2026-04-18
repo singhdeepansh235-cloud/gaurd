@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sentinal-Fuzz{% endblock %}</title>
+    <meta name="description" content="Sentinal-Fuzz — Intelligent DAST Scanner Web Interface">
+
+    <!-- Favicon (inline SVG) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/main.css">
+
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="main-nav">
+        <a href="/" class="nav-brand">
+            <span class="shield-icon">🛡️</span>
+            <span>Sentinal-Fuzz</span>
+        </a>
+
+        <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileNav()" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <ul class="nav-links" id="nav-links">
+            <li><a href="/" class="{% if active_page == 'dashboard' %}active{% endif %}" id="nav-dashboard">
+                <span>📊</span> Dashboard
+            </a></li>
+            <li><a href="/scan/new" class="{% if active_page == 'scan_new' %}active{% endif %}" id="nav-new-scan">
+                <span>🎯</span> New Scan
+            </a></li>
+            <li><a href="/phishing-check" class="{% if active_page == 'phishing_check' %}active{% endif %}" id="nav-phishing-check">
+                <span>🎣</span> Phishing Check
+            </a></li>
+            <li><a href="/scans" class="{% if active_page == 'history' %}active{% endif %}" id="nav-history">
+                <span>📋</span> History
+            </a></li>
+            <li><a href="/templates" class="{% if active_page == 'templates' %}active{% endif %}" id="nav-templates">
+                <span>📝</span> Templates
+            </a></li>
+            <li><a href="/settings" class="{% if active_page == 'settings' %}active{% endif %}" id="nav-settings">
+                <span>⚙️</span> Settings
+            </a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <a href="/scan/new" class="btn btn-primary btn-sm" id="nav-quick-scan">
+                <span>⚡</span> Quick Scan
+            </a>
+        </div>
+    </nav>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <span>Sentinal-Fuzz v0.1.0</span>
+        &nbsp;·&nbsp;
+        <a href="https://github.com/sentinal-fuzz" target="_blank">GitHub</a>
+        &nbsp;·&nbsp;
+        <span>MIT License</span>
+    </footer>
+
+    <!-- Global JS -->
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
