@@ -34,6 +34,8 @@ def main() -> None:
         host=args.host,
         port=port,
         reload=args.reload,
+        proxy_headers=True,
+        forwarded_allow_ips="*",
     )
 
 
