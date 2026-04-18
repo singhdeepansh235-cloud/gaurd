@@ -39,4 +39,4 @@ RUN python -m playwright install --with-deps
 
 COPY . .
 
-CMD uvicorn --factory sentinal_fuzz.web.app:create_app --host 0.0.0.0 --port ${PORT:-8080}
+CMD ["sh", "-c", "uvicorn --factory sentinal_fuzz.web.app:create_app --host 0.0.0.0 --port ${PORT:-8080}"]
