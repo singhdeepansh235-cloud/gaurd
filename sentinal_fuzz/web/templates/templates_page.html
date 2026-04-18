@@ -7,7 +7,7 @@
 <div class="page-header">
     <div class="flex items-center justify-between">
         <div>
-            <h1>📝 Fuzzing Templates</h1>
+            <h1><i data-lucide="file-text" class="lucide-heading"></i> Fuzzing Templates</h1>
             <p class="subtitle">Browse and manage the vulnerability detection templates used during scanning</p>
         </div>
     </div>
@@ -15,7 +15,7 @@
 
 <!-- Template info banner -->
 <div class="alert alert-info mb-24">
-    <span class="alert-icon">💡</span>
+    <span class="alert-icon"><i data-lucide="lightbulb" class="lucide-alert"></i></span>
     <div>
         <strong>What are templates?</strong> Templates define what vulnerabilities to test for and how to detect them.
         Each template contains payloads (test inputs) and matchers (detection rules) for a specific vulnerability type.
@@ -33,7 +33,7 @@
                 <div class="template-name">{{ info.get('name', tmpl.get('name', tmpl.get('id', 'Unknown'))) }}</div>
             </div>
             <span class="badge badge-{{ sev }}">
-                {% if sev == 'critical' %}🔴{% elif sev == 'high' %}🟠{% elif sev == 'medium' %}🟡{% elif sev == 'low' %}🔵{% else %}⚪{% endif %}
+                <span class="sev-dot sev-dot-{{ sev }}"></span>
                 {{ sev|upper }}
             </span>
         </div>
@@ -55,12 +55,12 @@
             <span>
                 {% set payloads = tmpl.get('payloads', []) %}
                 {% if payloads is string %}
-                    📦 External payloads
+                    <i data-lucide="package" class="lucide-inline"></i> External payloads
                 {% else %}
-                    📦 {{ payloads|length }} payloads
+                    <i data-lucide="package" class="lucide-inline"></i> {{ payloads|length }} payloads
                 {% endif %}
             </span>
-            <span>🎯 {{ tmpl.get('matchers', [])|length }} matchers</span>
+            <span><i data-lucide="crosshair" class="lucide-inline"></i> {{ tmpl.get('matchers', [])|length }} matchers</span>
             {% if tmpl.get('_filename') %}
             <span class="text-mono">{{ tmpl._filename }}</span>
             {% endif %}
@@ -88,7 +88,7 @@
 </div>
 {% else %}
 <div class="empty-state">
-    <div class="empty-state-icon">📝</div>
+    <div class="empty-state-icon"><i data-lucide="file-text" class="lucide-empty"></i></div>
     <h3>No templates found</h3>
     <p>No YAML templates were found in the templates/ directory. Make sure the templates directory exists in your project root.</p>
 </div>

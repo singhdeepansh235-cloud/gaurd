@@ -7,14 +7,14 @@
 <div class="page-header">
     <div class="flex items-center justify-between">
         <div>
-            <h1>📊 Scan Report</h1>
+            <h1><i data-lucide="bar-chart-3" class="lucide-heading"></i> Scan Report</h1>
             <p class="subtitle">
                 {{ scan_info.target if scan_info else '—' }} — {{ scan_info.profile if scan_info else 'standard' }} profile
             </p>
         </div>
         <div class="flex gap-8">
             <a href="/scan/{{ scan_id }}/live" class="btn btn-secondary btn-sm">← Live View</a>
-            <a href="/scans" class="btn btn-secondary btn-sm">📋 All Scans</a>
+            <a href="/scans" class="btn btn-secondary btn-sm"><i data-lucide="clipboard-list" class="lucide-btn-sm"></i> All Scans</a>
         </div>
     </div>
 </div>
@@ -73,17 +73,17 @@
             <h4 class="mb-12">Severity Breakdown</h4>
             {% set sev_counts = scan_info.severity_counts or {} %}
             {% set sevs = [
-                ('critical', 'CRITICAL', '🔴', '--sev-critical'),
-                ('high', 'HIGH', '🟠', '--sev-high'),
-                ('medium', 'MEDIUM', '🟡', '--sev-medium'),
-                ('low', 'LOW', '🔵', '--sev-low'),
-                ('info', 'INFO', '⚪', '--sev-info')
+                ('critical', 'CRITICAL', 'sev-dot-critical', '--sev-critical'),
+                ('high', 'HIGH', 'sev-dot-high', '--sev-high'),
+                ('medium', 'MEDIUM', 'sev-dot-medium', '--sev-medium'),
+                ('low', 'LOW', 'sev-dot-low', '--sev-low'),
+                ('info', 'INFO', 'sev-dot-info', '--sev-info')
             ] %}
-            {% for key, label, emoji, color in sevs %}
+            {% for key, label, dot_cls, color in sevs %}
             {% set count = sev_counts.get(key, 0) if sev_counts is mapping else 0 %}
             <div class="flex items-center justify-between" style="padding: 8px 0; border-bottom: 1px solid var(--border);">
                 <div class="flex items-center gap-8">
-                    <span>{{ emoji }}</span>
+                    <span class="sev-dot {{ dot_cls }}"></span>
                     <span style="font-weight: 600; color: var({{ color }});">{{ label }}</span>
                 </div>
                 <div class="flex items-center gap-12">
@@ -101,7 +101,7 @@
 <!-- Findings List -->
 <div class="mb-24">
     <div class="flex items-center justify-between mb-16">
-        <h2>🔍 Findings ({{ findings|length }})</h2>
+        <h2><i data-lucide="search" class="lucide-heading"></i> Findings ({{ findings|length }})</h2>
         <div class="flex gap-8">
             <select class="form-select" id="filter-severity" onchange="filterFindings()" style="width: 160px; padding: 6px 12px; font-size: 0.82rem;">
                 <option value="all">All Severities</option>
@@ -123,7 +123,7 @@
             <div class="finding-card-header" onclick="toggleFinding(this)">
                 <span class="finding-card-toggle">▶</span>
                 <span class="badge badge-{{ sev }}">
-                    {% if sev == 'critical' %}🔴{% elif sev == 'high' %}🟠{% elif sev == 'medium' %}🟡{% elif sev == 'low' %}🔵{% else %}⚪{% endif %}
+                    <span class="sev-dot sev-dot-{{ sev }}"></span>
                     {{ sev|upper }}
                 </span>
                 <span class="finding-card-title">{{ finding.title|default('Unknown Finding') }}</span>
@@ -174,7 +174,7 @@
 
                 {% if finding.remediation %}
                 <div class="remediation-box">
-                    <h4>✅ How to Fix</h4>
+                    <h4><i data-lucide="check-circle" class="lucide-btn-sm" style="color: var(--status-complete);"></i> How to Fix</h4>
                     <p>{{ finding.remediation }}</p>
                 </div>
                 {% endif %}
@@ -191,7 +191,7 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-state-icon">✅</div>
+        <div class="empty-state-icon"><i data-lucide="check-circle" class="lucide-empty" style="color: var(--status-complete);"></i></div>
         <h3>No Vulnerabilities Found</h3>
         <p>The scan completed without finding any security issues. Great job!</p>
     </div>
@@ -200,7 +200,7 @@
 
 {% else %}
 <div class="empty-state">
-    <div class="empty-state-icon">⏳</div>
+    <div class="empty-state-icon"><i data-lucide="clock" class="lucide-empty"></i></div>
     <h3>Report Not Available</h3>
     <p>This scan hasn't completed yet or no results are available.</p>
     <a href="/scan/{{ scan_id }}/live" class="btn btn-primary">View Live Scan →</a>
@@ -253,7 +253,7 @@ if (ctx) {
                 datasets: [{
                     data: data,
                     backgroundColor: ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#6b7280'],
-                    borderColor: '#1a2035',
+                    borderColor: 'var(--bg-card)',
                     borderWidth: 3,
                 }]
             },

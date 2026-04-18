@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>🎯 New Scan</h1>
+    <h1><i data-lucide="crosshair" class="lucide-heading"></i> New Scan</h1>
     <p class="subtitle">Configure and launch a security scan against your target</p>
 </div>
 
@@ -29,10 +29,10 @@
         <div class="mt-12">
             <p class="text-xs text-muted mb-8">Quick fill — Practice targets:</p>
             <div class="flex gap-8 flex-wrap">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://127.0.0.1:8899'" style="font-size: 0.75rem;">🧪 Test Server</button>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:3000'" style="font-size: 0.75rem;">🧃 Juice Shop</button>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:4280'" style="font-size: 0.75rem;">🕸️ DVWA</button>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:8888/WebGoat'" style="font-size: 0.75rem;">🐐 WebGoat</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://127.0.0.1:8899'" style="font-size: 0.75rem;"><i data-lucide="flask-conical" class="lucide-btn-sm"></i> Test Server</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:3000'" style="font-size: 0.75rem;"><i data-lucide="cup-soda" class="lucide-btn-sm"></i> Juice Shop</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:4280'" style="font-size: 0.75rem;"><i data-lucide="globe" class="lucide-btn-sm"></i> DVWA</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('scan-target').value='http://localhost:8888/WebGoat'" style="font-size: 0.75rem;"><i data-lucide="bug" class="lucide-btn-sm"></i> WebGoat</button>
             </div>
         </div>
     </div>
@@ -46,7 +46,7 @@
             <label class="radio-card">
                 <input type="radio" name="scan_profile" value="quick" id="profile-quick">
                 <div class="radio-card-body">
-                    <div style="font-size: 1.5rem; margin-bottom: 8px;">⚡</div>
+                    <div style="font-size: 1.5rem; margin-bottom: 8px;"><i data-lucide="zap" class="lucide-radio-icon"></i></div>
                     <div class="radio-card-title">Quick</div>
                     <div class="radio-card-desc">Fast surface-level scan. Depth: 2, ~2 min</div>
                 </div>
@@ -54,7 +54,7 @@
             <label class="radio-card">
                 <input type="radio" name="scan_profile" value="standard" checked id="profile-standard">
                 <div class="radio-card-body">
-                    <div style="font-size: 1.5rem; margin-bottom: 8px;">🔍</div>
+                    <div style="font-size: 1.5rem; margin-bottom: 8px;"><i data-lucide="search" class="lucide-radio-icon"></i></div>
                     <div class="radio-card-title">Standard</div>
                     <div class="radio-card-desc">Balanced scan. Depth: 3, ~5 min</div>
                 </div>
@@ -62,7 +62,7 @@
             <label class="radio-card">
                 <input type="radio" name="scan_profile" value="thorough" id="profile-thorough">
                 <div class="radio-card-body">
-                    <div style="font-size: 1.5rem; margin-bottom: 8px;">🔬</div>
+                    <div style="font-size: 1.5rem; margin-bottom: 8px;"><i data-lucide="microscope" class="lucide-radio-icon"></i></div>
                     <div class="radio-card-title">Thorough</div>
                     <div class="radio-card-desc">Deep comprehensive scan. Depth: 5, ~15 min</div>
                 </div>
@@ -136,7 +136,7 @@
 
     <!-- Legal Warning -->
     <div class="alert alert-warning mb-20">
-        <span class="alert-icon">⚠️</span>
+        <span class="alert-icon"><i data-lucide="alert-triangle" class="lucide-alert"></i></span>
         <div>
             <strong>Legal Notice:</strong> Only scan web applications that you own or have explicit written
             permission to test. Unauthorized scanning may violate laws in your jurisdiction.
@@ -146,7 +146,7 @@
     <!-- Submit -->
     <div class="flex gap-12">
         <button type="submit" class="btn btn-primary btn-lg" id="submit-scan-btn">
-            🚀 Start Scan
+            <i data-lucide="rocket" class="lucide-btn"></i> Start Scan
         </button>
         <a href="/" class="btn btn-secondary btn-lg">Cancel</a>
     </div>
@@ -174,7 +174,8 @@ async function submitScan(e) {
     e.preventDefault();
     const btn = document.getElementById('submit-scan-btn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spin">⏳</span> Starting Scan...';
+    btn.innerHTML = '<span class="spin"><i data-lucide="loader" class="lucide-btn"></i></span> Starting Scan...';
+    if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
 
     const target = document.getElementById('scan-target').value.trim();
     const profile = document.querySelector('input[name="scan_profile"]:checked').value;
@@ -211,7 +212,8 @@ async function submitScan(e) {
             const err = await res.json();
             showToast(err.detail || 'Failed to start scan', 'error');
             btn.disabled = false;
-            btn.innerHTML = '🚀 Start Scan';
+            btn.innerHTML = '<i data-lucide="rocket" class="lucide-btn"></i> Start Scan';
+            if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
             return false;
         }
 
@@ -221,7 +223,8 @@ async function submitScan(e) {
     } catch (err) {
         showToast('Error: ' + err.message, 'error');
         btn.disabled = false;
-        btn.innerHTML = '🚀 Start Scan';
+        btn.innerHTML = '<i data-lucide="rocket" class="lucide-btn"></i> Start Scan';
+        if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
     }
     return false;
 }

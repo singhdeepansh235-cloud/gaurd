@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <meta name="description" content="Sentinal-Fuzz — Intelligent DAST Scanner Web Interface">
 
     <!-- Favicon (inline SVG) -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%234d9eff'/><path d='M50 15 L80 30 V55 C80 72 50 88 50 88 C50 88 20 72 20 55 V30 Z' fill='none' stroke='white' stroke-width='6'/></svg>">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +15,9 @@
 
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 
     <!-- Styles -->
     <link rel="stylesheet" href="/static/css/main.css">
@@ -25,7 +28,7 @@
     <!-- Navigation -->
     <nav class="nav" id="main-nav">
         <a href="/" class="nav-brand">
-            <span class="shield-icon">🛡️</span>
+            <span class="shield-icon"><i data-lucide="shield" class="lucide-nav-brand"></i></span>
             <span>Sentinal-Fuzz</span>
         </a>
 
@@ -37,28 +40,32 @@
 
         <ul class="nav-links" id="nav-links">
             <li><a href="/" class="{% if active_page == 'dashboard' %}active{% endif %}" id="nav-dashboard">
-                <span>📊</span> Dashboard
+                <i data-lucide="layout-dashboard" class="lucide-nav"></i> Dashboard
             </a></li>
             <li><a href="/scan/new" class="{% if active_page == 'scan_new' %}active{% endif %}" id="nav-new-scan">
-                <span>🎯</span> New Scan
+                <i data-lucide="crosshair" class="lucide-nav"></i> New Scan
             </a></li>
             <li><a href="/phishing-check" class="{% if active_page == 'phishing_check' %}active{% endif %}" id="nav-phishing-check">
-                <span>🎣</span> Phishing Check
+                <i data-lucide="fish" class="lucide-nav"></i> Phishing Check
             </a></li>
             <li><a href="/scans" class="{% if active_page == 'history' %}active{% endif %}" id="nav-history">
-                <span>📋</span> History
+                <i data-lucide="clock" class="lucide-nav"></i> History
             </a></li>
             <li><a href="/templates" class="{% if active_page == 'templates' %}active{% endif %}" id="nav-templates">
-                <span>📝</span> Templates
+                <i data-lucide="file-text" class="lucide-nav"></i> Templates
             </a></li>
             <li><a href="/settings" class="{% if active_page == 'settings' %}active{% endif %}" id="nav-settings">
-                <span>⚙️</span> Settings
+                <i data-lucide="settings" class="lucide-nav"></i> Settings
             </a></li>
         </ul>
 
         <div class="nav-actions">
+            <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                <i data-lucide="sun" class="theme-icon-light"></i>
+                <i data-lucide="moon" class="theme-icon-dark"></i>
+            </button>
             <a href="/scan/new" class="btn btn-primary btn-sm" id="nav-quick-scan">
-                <span>⚡</span> Quick Scan
+                <i data-lucide="zap" class="lucide-btn"></i> Quick Scan
             </a>
         </div>
     </nav>
@@ -74,9 +81,9 @@
     <!-- Footer -->
     <footer class="site-footer">
         <span>Sentinal-Fuzz v0.1.0</span>
-        &nbsp;·&nbsp;
+        &nbsp;&middot;&nbsp;
         <a href="https://github.com/sentinal-fuzz" target="_blank">GitHub</a>
-        &nbsp;·&nbsp;
+        &nbsp;&middot;&nbsp;
         <span>MIT License</span>
     </footer>
 

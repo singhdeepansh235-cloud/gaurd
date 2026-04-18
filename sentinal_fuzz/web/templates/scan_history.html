@@ -7,10 +7,10 @@
 <div class="page-header">
     <div class="flex items-center justify-between">
         <div>
-            <h1>📋 Scan History</h1>
+            <h1><i data-lucide="clipboard-list" class="lucide-heading"></i> Scan History</h1>
             <p class="subtitle">View and manage all your past security scans</p>
         </div>
-        <a href="/scan/new" class="btn btn-primary">🎯 New Scan</a>
+        <a href="/scan/new" class="btn btn-primary"><i data-lucide="crosshair" class="lucide-btn"></i> New Scan</a>
     </div>
 </div>
 
@@ -19,7 +19,7 @@
 <div class="card mb-20">
     <div class="flex items-center gap-16 flex-wrap">
         <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 200px;">
-            <input type="text" class="form-input" id="search-scans" placeholder="🔍 Search by target URL..." oninput="filterScans()">
+            <input type="text" class="form-input" id="search-scans" placeholder="Search by target URL..." oninput="filterScans()">
         </div>
         <div class="form-group" style="margin-bottom: 0;">
             <select class="form-select" id="filter-status" onchange="filterScans()" style="width: 160px;">
@@ -73,12 +73,12 @@
                 <td>
                     <div class="actions">
                         {% if scan.status == 'running' %}
-                        <a href="/scan/{{ scan.id }}/live" class="btn btn-ghost btn-sm">📡 Live</a>
+                        <a href="/scan/{{ scan.id }}/live" class="btn btn-ghost btn-sm"><i data-lucide="radio" class="lucide-btn-sm"></i> Live</a>
                         {% endif %}
                         {% if scan.status == 'complete' %}
-                        <a href="/scan/{{ scan.id }}/report" class="btn btn-ghost btn-sm">📊 Report</a>
+                        <a href="/scan/{{ scan.id }}/report" class="btn btn-ghost btn-sm"><i data-lucide="bar-chart-3" class="lucide-btn-sm"></i> Report</a>
                         {% endif %}
-                        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); deleteScan('{{ scan.id }}')" style="color: var(--sev-critical);">🗑️</button>
+                        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); deleteScan('{{ scan.id }}')" style="color: var(--sev-critical);"><i data-lucide="trash-2" class="lucide-btn-sm"></i></button>
                     </div>
                 </td>
             </tr>
@@ -89,10 +89,10 @@
 
 {% else %}
 <div class="empty-state">
-    <div class="empty-state-icon">📋</div>
+    <div class="empty-state-icon"><i data-lucide="clipboard-list" class="lucide-empty"></i></div>
     <h3>No scan history</h3>
     <p>You haven't run any scans yet. Start your first scan to see results here.</p>
-    <a href="/scan/new" class="btn btn-primary">🎯 Start First Scan</a>
+    <a href="/scan/new" class="btn btn-primary"><i data-lucide="crosshair" class="lucide-btn"></i> Start First Scan</a>
 </div>
 {% endif %}
 {% endblock %}

@@ -13,7 +13,7 @@
             REAL-TIME THREAT ANALYSIS
         </div>
         <h1 class="phish-hero-title">
-            <span class="phish-hero-icon">🛡️</span>
+            <span class="phish-hero-icon"><i data-lucide="shield" class="lucide-hero"></i></span>
             Phishing Intelligence Scanner
         </h1>
         <p class="phish-hero-subtitle">
@@ -27,7 +27,7 @@
 <div class="phish-input-section">
     <form id="phishing-form" onsubmit="return runPhishingCheck(event)">
         <div class="phish-input-wrap">
-            <div class="phish-input-icon">🔗</div>
+            <div class="phish-input-icon"><i data-lucide="link" class="lucide-input"></i></div>
             <input type="text"
                    class="phish-input"
                    id="phishing-target"
@@ -81,27 +81,27 @@
     </div>
     <div class="scan-progress-steps">
         <div class="scan-step" id="step-heuristic">
-            <div class="scan-step-icon">🔍</div>
+            <div class="scan-step-icon"><i data-lucide="search" class="lucide-step"></i></div>
             <span>Heuristic Analysis</span>
         </div>
         <div class="scan-step" id="step-dns">
-            <div class="scan-step-icon">🌐</div>
+            <div class="scan-step-icon"><i data-lucide="globe" class="lucide-step"></i></div>
             <span>DNS Resolution</span>
         </div>
         <div class="scan-step" id="step-ssl">
-            <div class="scan-step-icon">🔒</div>
+            <div class="scan-step-icon"><i data-lucide="lock" class="lucide-step"></i></div>
             <span>SSL Certificate</span>
         </div>
         <div class="scan-step" id="step-http">
-            <div class="scan-step-icon">📡</div>
+            <div class="scan-step-icon"><i data-lucide="radio" class="lucide-step"></i></div>
             <span>HTTP Analysis</span>
         </div>
         <div class="scan-step" id="step-whois">
-            <div class="scan-step-icon">📋</div>
+            <div class="scan-step-icon"><i data-lucide="clipboard" class="lucide-step"></i></div>
             <span>WHOIS Lookup</span>
         </div>
         <div class="scan-step" id="step-ai">
-            <div class="scan-step-icon">🤖</div>
+            <div class="scan-step-icon"><i data-lucide="bot" class="lucide-step"></i></div>
             <span>AI Assessment</span>
         </div>
     </div>
@@ -126,16 +126,16 @@
         <p>Enter a URL above and our multi-engine scanner will analyze it across 18+ threat indicators in real-time.</p>
         <div class="phish-empty-features">
             <div class="phish-empty-feature">
-                <span>🧠</span> AI-Powered Analysis
+                <i data-lucide="brain" class="lucide-feature"></i> AI-Powered Analysis
             </div>
             <div class="phish-empty-feature">
-                <span>🔒</span> SSL Verification
+                <i data-lucide="lock" class="lucide-feature"></i> SSL Verification
             </div>
             <div class="phish-empty-feature">
-                <span>🌐</span> DNS Checks
+                <i data-lucide="globe" class="lucide-feature"></i> DNS Checks
             </div>
             <div class="phish-empty-feature">
-                <span>📡</span> Live Content Scan
+                <i data-lucide="radio" class="lucide-feature"></i> Live Content Scan
             </div>
         </div>
     </div>
@@ -147,7 +147,7 @@
     <!-- ── Top verdict bar ── -->
     <div class="phish-verdict-bar" id="phish-verdict-bar">
         <div class="phish-verdict-left">
-            <div class="phish-verdict-icon" id="phish-verdict-icon">🚨</div>
+            <div class="phish-verdict-icon" id="phish-verdict-icon"><i data-lucide="alert-circle" class="lucide-verdict"></i></div>
             <div>
                 <div class="phish-verdict-status" id="phish-verdict-status">Likely Phishing</div>
                 <div class="phish-verdict-domain" id="phish-verdict-domain">example.com</div>
@@ -173,7 +173,7 @@
 
     <!-- ── Brand impersonation alert ── -->
     <div class="phish-brand-alert hidden" id="brand-match-section">
-        <div class="phish-brand-alert-icon">⚠️</div>
+        <div class="phish-brand-alert-icon"><i data-lucide="alert-triangle" class="lucide-brand-alert"></i></div>
         <div class="phish-brand-alert-content">
             <strong>Brand Impersonation Detected</strong>
             <p>This domain appears to impersonate <strong id="brand-match-name"></strong>.
@@ -210,7 +210,7 @@
             <!-- Findings -->
             <div class="phish-card phish-card-findings" id="findings-card">
                 <div class="phish-card-header">
-                    <h3><span>🔍</span> Threat Findings</h3>
+                    <h3><i data-lucide="search" class="lucide-card-h"></i> Threat Findings</h3>
                     <span class="phish-card-badge" id="findings-count-badge">0</span>
                 </div>
                 <div id="phishing-reasons-container"></div>
@@ -223,13 +223,13 @@
             <!-- Live Infrastructure Checks -->
             <div class="phish-card">
                 <div class="phish-card-header">
-                    <h3><span>📡</span> Live Infrastructure Analysis</h3>
+                    <h3><i data-lucide="radio" class="lucide-card-h"></i> Live Infrastructure Analysis</h3>
                 </div>
 
                 <!-- DNS -->
                 <div class="phish-live-check" id="live-dns">
                     <div class="phish-live-header">
-                        <span class="phish-live-icon">🌐</span>
+                        <span class="phish-live-icon"><i data-lucide="globe" class="lucide-live"></i></span>
                         <span class="phish-live-title">DNS Resolution</span>
                         <span class="phish-live-status" id="dns-status">—</span>
                     </div>
@@ -239,7 +239,7 @@
                 <!-- SSL -->
                 <div class="phish-live-check" id="live-ssl">
                     <div class="phish-live-header">
-                        <span class="phish-live-icon">🔒</span>
+                        <span class="phish-live-icon"><i data-lucide="lock" class="lucide-live"></i></span>
                         <span class="phish-live-title">SSL Certificate</span>
                         <span class="phish-live-status" id="ssl-status">—</span>
                     </div>
@@ -249,7 +249,7 @@
                 <!-- HTTP -->
                 <div class="phish-live-check" id="live-http">
                     <div class="phish-live-header">
-                        <span class="phish-live-icon">📡</span>
+                        <span class="phish-live-icon"><i data-lucide="radio" class="lucide-live"></i></span>
                         <span class="phish-live-title">HTTP Response</span>
                         <span class="phish-live-status" id="http-status">—</span>
                     </div>
@@ -259,7 +259,7 @@
                 <!-- WHOIS -->
                 <div class="phish-live-check" id="live-whois">
                     <div class="phish-live-header">
-                        <span class="phish-live-icon">📋</span>
+                        <span class="phish-live-icon"><i data-lucide="clipboard" class="lucide-live"></i></span>
                         <span class="phish-live-title">Domain Age (WHOIS)</span>
                         <span class="phish-live-status" id="whois-status">—</span>
                     </div>
@@ -269,7 +269,7 @@
                 <!-- Security Headers -->
                 <div class="phish-live-check" id="live-headers">
                     <div class="phish-live-header">
-                        <span class="phish-live-icon">🛡️</span>
+                        <span class="phish-live-icon"><i data-lucide="shield" class="lucide-live"></i></span>
                         <span class="phish-live-title">Security Headers</span>
                         <span class="phish-live-status" id="headers-status">—</span>
                     </div>
@@ -279,7 +279,7 @@
                 <!-- Content Analysis -->
                 <div class="phish-live-check" id="live-content">
                     <div class="phish-live-header">
-                        <span class="phish-live-icon">🕵️</span>
+                        <span class="phish-live-icon"><i data-lucide="eye" class="lucide-live"></i></span>
                         <span class="phish-live-title">Page Content Analysis</span>
                         <span class="phish-live-status" id="content-status">—</span>
                     </div>
@@ -294,7 +294,7 @@
             <!-- Heuristic checks -->
             <div class="phish-card">
                 <div class="phish-card-header">
-                    <h3><span>🧪</span> Heuristic Checks</h3>
+                    <h3><i data-lucide="flask-conical" class="lucide-card-h"></i> Heuristic Checks</h3>
                 </div>
                 <div class="phish-checks-grid" id="security-checks-grid"></div>
             </div>
@@ -302,7 +302,7 @@
             <!-- AI Engine -->
             <div class="phish-card phish-card-ai">
                 <div class="phish-card-header">
-                    <h3><span>🤖</span> AI Analysis Engine</h3>
+                    <h3><i data-lucide="bot" class="lucide-card-h"></i> AI Analysis Engine</h3>
                     <span class="phish-ai-badge" id="analysis-engine-model">gemini</span>
                 </div>
                 <div class="phish-ai-status" id="analysis-engine-status"></div>
@@ -320,7 +320,7 @@
             <!-- Summary -->
             <div class="phish-card phish-card-summary">
                 <div class="phish-card-header">
-                    <h3><span>📝</span> Analysis Summary</h3>
+                    <h3><i data-lucide="file-text" class="lucide-card-h"></i> Analysis Summary</h3>
                 </div>
                 <div class="phish-summary-text" id="phishing-summary-text"></div>
             </div>
@@ -1088,6 +1088,172 @@
         .phish-verdict-bar { flex-direction: column; gap: 16px; text-align: center; }
         .phish-verdict-left { flex-direction: column; align-items: center; }
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LIGHT THEME OVERRIDES — PHISHING PAGE
+       ═══════════════════════════════════════════════════════════════ */
+
+    [data-theme="light"] .phish-hero-bg {
+        background:
+            radial-gradient(ellipse at 30% 0%, rgba(59, 125, 221, 0.12) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 100%, rgba(106, 90, 205, 0.08) 0%, transparent 50%),
+            linear-gradient(135deg, rgba(240, 243, 255, 0.98), rgba(230, 235, 250, 0.95));
+    }
+
+    [data-theme="light"] .phish-hero {
+        border-color: rgba(59, 125, 221, 0.12);
+    }
+
+    [data-theme="light"] .phish-hero-title {
+        color: #1a1f36;
+    }
+
+    [data-theme="light"] .phish-hero-subtitle {
+        color: #4a5068;
+    }
+
+    [data-theme="light"] .phish-hero-badge {
+        background: rgba(59, 125, 221, 0.1);
+        border-color: rgba(59, 125, 221, 0.18);
+    }
+
+    [data-theme="light"] .phish-input-wrap {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="light"] .phish-input-wrap:focus-within {
+        border-color: #3b7ddd;
+        box-shadow: 0 0 0 4px rgba(59, 125, 221, 0.1), 0 4px 24px rgba(59, 125, 221, 0.06);
+    }
+
+    [data-theme="light"] .phish-input {
+        color: #1a1f36;
+    }
+
+    [data-theme="light"] .phish-chip {
+        background: rgba(0, 0, 0, 0.02);
+        border-color: rgba(0, 0, 0, 0.08);
+        color: #4a5068;
+    }
+
+    [data-theme="light"] .phish-chip:hover {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: rgba(0, 0, 0, 0.14);
+    }
+
+    [data-theme="light"] .scan-progress-bar {
+        background: rgba(0, 0, 0, 0.06);
+    }
+
+    [data-theme="light"] .phish-verdict-bar {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="light"] .phish-card {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="light"] .phish-card-ai {
+        background: linear-gradient(135deg, #ffffff, rgba(245, 243, 255, 0.9));
+        border-color: rgba(106, 90, 205, 0.12);
+    }
+
+    [data-theme="light"] .phish-ai-summary {
+        background: rgba(0, 0, 0, 0.02);
+        border-color: rgba(0, 0, 0, 0.06);
+        color: #4a5068;
+    }
+
+    [data-theme="light"] .phish-check-item {
+        background: rgba(0, 0, 0, 0.02);
+        border-color: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="light"] .phish-check-item:hover {
+        background: rgba(0, 0, 0, 0.04);
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="light"] .phish-finding.sev-critical {
+        background: rgba(240, 70, 90, 0.06);
+    }
+
+    [data-theme="light"] .phish-finding.sev-high {
+        background: rgba(245, 146, 62, 0.06);
+    }
+
+    [data-theme="light"] .phish-finding.sev-medium {
+        background: rgba(228, 190, 58, 0.06);
+    }
+
+    [data-theme="light"] .phish-finding.sev-low {
+        background: rgba(61, 142, 240, 0.06);
+    }
+
+    [data-theme="light"] .phish-brand-alert {
+        background: rgba(240, 70, 90, 0.06);
+        border-color: rgba(240, 70, 90, 0.15);
+    }
+
+    [data-theme="light"] .phish-stat {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="light"] .phish-empty-feature {
+        background: rgba(59, 125, 221, 0.05);
+        border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="light"] .phish-live-detail code {
+        background: rgba(59, 125, 221, 0.08);
+    }
+
+    [data-theme="light"] .phish-risk-arc {
+        stroke: rgba(0, 0, 0, 0.06) !important;
+    }
+
+    [data-theme="light"] .phish-card-summary {
+        border-color: rgba(59, 125, 221, 0.1);
+    }
+
+    [data-theme="light"] .scan-progress {
+        background: #ffffff;
+        border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    [data-theme="light"] .phish-card-badge {
+        background: rgba(240, 70, 90, 0.08);
+    }
+
+    [data-theme="light"] .phish-live-status.status-pass {
+        background: rgba(52, 208, 122, 0.08);
+    }
+    [data-theme="light"] .phish-live-status.status-fail {
+        background: rgba(240, 70, 90, 0.08);
+    }
+    [data-theme="light"] .phish-live-status.status-warn {
+        background: rgba(228, 190, 58, 0.08);
+    }
+    [data-theme="light"] .phish-live-status.status-info {
+        background: rgba(59, 125, 221, 0.08);
+    }
+    [data-theme="light"] .phish-live-status.status-err {
+        background: rgba(106, 117, 144, 0.08);
+    }
+
+    [data-theme="light"] .phish-check-pass {
+        background: rgba(52, 208, 122, 0.08);
+    }
+    [data-theme="light"] .phish-check-fail {
+        background: rgba(240, 70, 90, 0.08);
+    }
+    [data-theme="light"] .phish-check-warn {
+        background: rgba(228, 190, 58, 0.08);
+    }
 </style>
 
 <script>
@@ -1106,9 +1272,9 @@ function statusColor(status) {
 }
 
 function statusIcon(status) {
-    if (status === 'Likely Phishing') return '🚨';
-    if (status === 'Suspicious') return '⚠️';
-    return '✅';
+    if (status === 'Likely Phishing') return '<i data-lucide="alert-circle" class="lucide-verdict"></i>';
+    if (status === 'Suspicious') return '<i data-lucide="alert-triangle" class="lucide-verdict"></i>';
+    return '<i data-lucide="check-circle" class="lucide-verdict"></i>';
 }
 
 function riskColor(score) {
@@ -1138,13 +1304,7 @@ function findingSeverity(reason, status) {
 }
 
 function findingIcon(severity) {
-    const icons = {
-        'sev-critical': '🔴',
-        'sev-high': '🟠',
-        'sev-medium': '🟡',
-        'sev-low': '🔵',
-    };
-    return icons[severity] || '⚡';
+    return `<span class="sev-dot sev-dot-${severity.replace('sev-','')}"></span>`;
 }
 
 // ── Scan progress simulation ──
@@ -1274,7 +1434,8 @@ function renderPhishingResult(data) {
     // ── Verdict Bar ──
     const bar = document.getElementById('phish-verdict-bar');
     bar.className = 'phish-verdict-bar ' + verdictClass(result.status);
-    document.getElementById('phish-verdict-icon').textContent = statusIcon(result.status);
+    document.getElementById('phish-verdict-icon').innerHTML = statusIcon(result.status);
+    if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
     const statusEl = document.getElementById('phish-verdict-status');
     statusEl.textContent = result.status;
     statusEl.style.color = statusColor(result.status);
@@ -1345,19 +1506,19 @@ function renderPhishingResult(data) {
     checksGrid.innerHTML = '';
 
     const checkDefs = [
-        { key: 'whitelist',           icon: '🏠', label: 'Known legitimate domain' },
-        { key: 'ip_based',            icon: '🔢', label: 'IP-based URL' },
-        { key: 'brand_similarity',    icon: '🎭', label: 'Brand impersonation' },
-        { key: 'homoglyphs',          icon: '🔤', label: 'Homoglyph / leetspeak' },
-        { key: 'suspicious_tld',      icon: '🌐', label: 'Suspicious TLD' },
-        { key: 'suspicious_keywords', icon: '🔑', label: 'Phishing keywords' },
-        { key: 'subdomain_depth',     icon: '📂', label: 'Subdomain depth' },
-        { key: 'hyphen_abuse',        icon: '➖', label: 'Hyphen abuse' },
-        { key: 'url_length',          icon: '📏', label: 'URL length' },
-        { key: 'https',               icon: '🔒', label: 'HTTPS encryption' },
-        { key: 'url_shortener',       icon: '🔗', label: 'URL shortener' },
-        { key: 'punycode',            icon: '🌍', label: 'Punycode / IDN' },
-        { key: 'encoded_chars',       icon: '🔣', label: 'Encoded characters' },
+        { key: 'whitelist',           icon: 'home', label: 'Known legitimate domain' },
+        { key: 'ip_based',            icon: 'hash', label: 'IP-based URL' },
+        { key: 'brand_similarity',    icon: 'drama', label: 'Brand impersonation' },
+        { key: 'homoglyphs',          icon: 'type', label: 'Homoglyph / leetspeak' },
+        { key: 'suspicious_tld',      icon: 'globe', label: 'Suspicious TLD' },
+        { key: 'suspicious_keywords', icon: 'key', label: 'Phishing keywords' },
+        { key: 'subdomain_depth',     icon: 'folder-tree', label: 'Subdomain depth' },
+        { key: 'hyphen_abuse',        icon: 'minus', label: 'Hyphen abuse' },
+        { key: 'url_length',          icon: 'ruler', label: 'URL length' },
+        { key: 'https',               icon: 'lock', label: 'HTTPS encryption' },
+        { key: 'url_shortener',       icon: 'link', label: 'URL shortener' },
+        { key: 'punycode',            icon: 'languages', label: 'Punycode / IDN' },
+        { key: 'encoded_chars',       icon: 'binary', label: 'Encoded characters' },
     ];
 
     checkDefs.forEach(def => {
@@ -1380,10 +1541,11 @@ function renderPhishingResult(data) {
         }
 
         item.innerHTML = `
-            <span class="phish-check-icon">${def.icon}</span>
+            <span class="phish-check-icon"><i data-lucide="${def.icon}" class="lucide-check"></i></span>
             <span class="phish-check-label">${def.label}</span>
             <span class="phish-check-status ${statusClass}">${statusText}</span>
         `;
+        if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
         checksGrid.appendChild(item);
     });
 
@@ -1457,10 +1619,10 @@ function renderLiveChecks(live) {
             sslInfo += ` · Expires in ${ssl.days_until_expiry} days`;
         }
         if (ssl.is_free_cert) {
-            sslInfo += ' · ⚠️ Free/automated CA';
+            sslInfo += ' · [!] Free/automated CA';
         }
         if (ssl.cert_age_days !== null && ssl.cert_age_days !== undefined && ssl.cert_age_days < 30) {
-            sslInfo += ` · 🆕 Certificate only ${ssl.cert_age_days} days old`;
+            sslInfo += ` · [NEW] Certificate only ${ssl.cert_age_days} days old`;
         }
         sslDetail.innerHTML = sslInfo;
     } else if (ssl.valid === false) {
@@ -1489,7 +1651,7 @@ function renderLiveChecks(live) {
             httpInfo += `<br>Title: "${escapeHtml(http.page_title.substring(0, 80))}"`;
         }
         if (http.final_domain && http.final_domain !== new URL(document.getElementById('phishing-target').value.includes('://') ? document.getElementById('phishing-target').value : 'https://' + document.getElementById('phishing-target').value).hostname) {
-            httpInfo += `<br>⚠️ Final domain: <code>${escapeHtml(http.final_domain)}</code>`;
+            httpInfo += `<br>[!] Final domain: <code>${escapeHtml(http.final_domain)}</code>`;
         }
         httpDetail.innerHTML = httpInfo;
     } else {
@@ -1511,7 +1673,7 @@ function renderLiveChecks(live) {
             const isNew = whois.is_very_new || whois.is_new;
             whoisStatus.textContent = isNew ? 'NEW DOMAIN' : 'ESTABLISHED';
             whoisStatus.className = `phish-live-status ${isNew ? 'status-warn' : 'status-pass'}`;
-            whoisDetail.innerHTML = `Registered: <code>${whois.creation_date}</code> · Age: ${whois.age_days} days${whois.is_very_new ? ' ⚠️ Very new!' : ''}`;
+            whoisDetail.innerHTML = `Registered: <code>${whois.creation_date}</code> · Age: ${whois.age_days} days${whois.is_very_new ? ' [!] Very new!' : ''}`;
         } else {
             whoisStatus.textContent = 'LOOKUP OK';
             whoisStatus.className = 'phish-live-status status-info';

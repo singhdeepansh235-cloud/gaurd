@@ -8,7 +8,7 @@
 <div class="hero-card mb-24" id="hero-quick-scan">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
-    <h2>🛡️ Start a Security Scan</h2>
+    <h2><i data-lucide="shield-check" class="lucide-heading"></i> Start a Security Scan</h2>
     <p>Enter a target URL to discover vulnerabilities with the Sentinal-Fuzz DAST scanner</p>
     <form class="hero-input-group" id="quick-scan-form" onsubmit="return startQuickScan(event)">
         <input type="url"
@@ -18,17 +18,17 @@
                required
                autocomplete="url">
         <button type="submit" class="btn btn-primary btn-lg" id="quick-scan-btn">
-            ⚡ Scan Now
+            <i data-lucide="zap" class="lucide-btn"></i> Scan Now
         </button>
     </form>
 
     <div class="alert alert-warning mt-16" style="max-width: 600px; margin-left: auto; margin-right: auto; text-align: left;">
-        <span class="alert-icon">⚠️</span>
+        <span class="alert-icon"><i data-lucide="alert-triangle" class="lucide-alert"></i></span>
         <span>Only scan targets you own or have explicit permission to test.</span>
     </div>
 
     <div class="flex items-center justify-center gap-12 mt-16 flex-wrap">
-        <a href="/phishing-check" class="btn btn-secondary">🎣 Open Phishing Check</a>
+        <a href="/phishing-check" class="btn btn-secondary"><i data-lucide="fish" class="lucide-btn"></i> Open Phishing Check</a>
         <span class="text-sm text-muted">Use this for fast URL/domain lookalike analysis without running the full fuzzer.</span>
     </div>
 </div>
@@ -38,7 +38,7 @@
     <div class="card stat-card" id="stat-total-scans">
         <div class="card-header">
             <span class="card-title">Total Scans</span>
-            <span class="card-icon">🔍</span>
+            <span class="card-icon"><i data-lucide="search" class="lucide-card"></i></span>
         </div>
         <div class="card-value">{{ total_scans }}</div>
         <span class="card-footer">All time</span>
@@ -47,7 +47,7 @@
     <div class="card stat-card" id="stat-total-findings">
         <div class="card-header">
             <span class="card-title">Findings</span>
-            <span class="card-icon">🐛</span>
+            <span class="card-icon"><i data-lucide="bug" class="lucide-card"></i></span>
         </div>
         <div class="card-value">{{ total_findings }}</div>
         <span class="card-footer">Vulnerabilities discovered</span>
@@ -56,7 +56,7 @@
     <div class="card stat-card" id="stat-active-scans">
         <div class="card-header">
             <span class="card-title">Active Scans</span>
-            <span class="card-icon">📡</span>
+            <span class="card-icon"><i data-lucide="radio" class="lucide-card"></i></span>
         </div>
         <div class="card-value">{{ active_scans|length }}</div>
         <span class="card-footer">Currently running</span>
@@ -65,7 +65,7 @@
     <div class="card stat-card" id="stat-templates">
         <div class="card-header">
             <span class="card-title">Templates</span>
-            <span class="card-icon">📝</span>
+            <span class="card-icon"><i data-lucide="file-text" class="lucide-card"></i></span>
         </div>
         <div class="card-value">9</div>
         <span class="card-footer">Active fuzzing templates</span>
@@ -75,7 +75,7 @@
 <!-- Active Scans -->
 {% if active_scans %}
 <div class="mb-24">
-    <h2 class="mb-16">📡 Active Scans</h2>
+    <h2 class="mb-16"><i data-lucide="radio" class="lucide-heading"></i> Active Scans</h2>
     {% for scan in active_scans %}
     <div class="card mb-16" style="border-left: 3px solid var(--status-running);">
         <div class="flex items-center justify-between mb-8">
@@ -102,25 +102,25 @@
 <div class="mb-24">
     <div class="flex items-center justify-between mb-16">
         <div>
-            <h2>🎯 Practice Targets</h2>
+            <h2><i data-lucide="crosshair" class="lucide-heading"></i> Practice Targets</h2>
             <p class="text-sm text-muted mt-4">Open-source vulnerable apps designed for DAST scanner testing</p>
         </div>
     </div>
     <div class="grid-3">
         <div class="target-card" onclick="document.getElementById('quick-scan-url').value='http://127.0.0.1:8899'; document.getElementById('quick-scan-url').focus(); window.scrollTo({top:0, behavior:'smooth'})">
-            <div class="target-icon">🧪</div>
+            <div class="target-icon"><i data-lucide="flask-conical" class="lucide-target"></i></div>
             <div class="target-name">Built-in Test Server</div>
             <div class="target-desc">Our own vulnerable test app with XSS, SQLi, SSTI, SSRF, and more. Run <code>python test_server.py</code> first.</div>
             <div class="target-url">http://127.0.0.1:8899</div>
         </div>
         <div class="target-card" onclick="document.getElementById('quick-scan-url').value='http://localhost:3000'; document.getElementById('quick-scan-url').focus(); window.scrollTo({top:0, behavior:'smooth'})">
-            <div class="target-icon">🧃</div>
+            <div class="target-icon"><i data-lucide="cup-soda" class="lucide-target"></i></div>
             <div class="target-name">OWASP Juice Shop</div>
             <div class="target-desc">Modern vulnerable web app with 100+ challenges. Run via Docker: <code>docker run -p 3000:3000 bkimminich/juice-shop</code></div>
             <div class="target-url">http://localhost:3000</div>
         </div>
         <div class="target-card" onclick="document.getElementById('quick-scan-url').value='http://localhost:4280'; document.getElementById('quick-scan-url').focus(); window.scrollTo({top:0, behavior:'smooth'})">
-            <div class="target-icon">🕸️</div>
+            <div class="target-icon"><i data-lucide="globe" class="lucide-target"></i></div>
             <div class="target-name">DVWA</div>
             <div class="target-desc">Damn Vulnerable Web App — classic security testing target. Run via Docker: <code>docker run -p 4280:80 vulnerables/web-dvwa</code></div>
             <div class="target-url">http://localhost:4280</div>
@@ -131,7 +131,7 @@
 <!-- Recent Scans -->
 <div class="mb-24">
     <div class="flex items-center justify-between mb-16">
-        <h2>📋 Recent Scans</h2>
+        <h2><i data-lucide="clipboard-list" class="lucide-heading"></i> Recent Scans</h2>
         <a href="/scans" class="btn btn-ghost">View All →</a>
     </div>
 
@@ -182,17 +182,17 @@
     </div>
     {% else %}
     <div class="empty-state">
-        <div class="empty-state-icon">🔍</div>
+        <div class="empty-state-icon"><i data-lucide="search" class="lucide-empty"></i></div>
         <h3>No scans yet</h3>
         <p>Start your first scan using the form above or pick a practice target.</p>
-        <a href="/scan/new" class="btn btn-primary">🎯 Start First Scan</a>
+        <a href="/scan/new" class="btn btn-primary"><i data-lucide="crosshair" class="lucide-btn"></i> Start First Scan</a>
     </div>
     {% endif %}
 </div>
 
 <!-- Getting Started Guide -->
 <div class="card">
-    <h3 class="mb-16">🚀 Getting Started</h3>
+    <h3 class="mb-16"><i data-lucide="rocket" class="lucide-heading"></i> Getting Started</h3>
     <div class="grid-3">
         <div class="step-card">
             <div class="step-num">1</div>
@@ -222,7 +222,8 @@ async function startQuickScan(e) {
 
     const btn = document.getElementById('quick-scan-btn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spin">⏳</span> Starting...';
+    btn.innerHTML = '<span class="spin"><i data-lucide="loader" class="lucide-btn"></i></span> Starting...';
+    if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
 
     try {
         const res = await fetch('/api/scans', {
@@ -235,7 +236,8 @@ async function startQuickScan(e) {
             const err = await res.json();
             showToast(err.detail || 'Failed to start scan', 'error');
             btn.disabled = false;
-            btn.innerHTML = '⚡ Scan Now';
+            btn.innerHTML = '<i data-lucide="zap" class="lucide-btn"></i> Scan Now';
+            if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
             return false;
         }
 
@@ -245,7 +247,8 @@ async function startQuickScan(e) {
     } catch (err) {
         showToast('Network error: ' + err.message, 'error');
         btn.disabled = false;
-        btn.innerHTML = '⚡ Scan Now';
+        btn.innerHTML = '<i data-lucide="zap" class="lucide-btn"></i> Scan Now';
+        if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
     }
     return false;
 }

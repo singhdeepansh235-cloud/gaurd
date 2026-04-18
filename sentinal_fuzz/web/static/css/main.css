@@ -88,6 +88,271 @@
     --max-width: 1360px;
 }
 
+/* ── Light Theme ───────────────────────────────────────────────── */
+[data-theme="light"] {
+    --bg-primary: #f4f6fb;
+    --bg-secondary: #eaecf3;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f0f2f8;
+    --bg-input: #f0f2f8;
+    --bg-overlay: rgba(0, 0, 0, 0.15);
+    --bg-elevated: #ffffff;
+
+    --surface-glass: rgba(255, 255, 255, 0.85);
+    --surface-glass-border: rgba(77, 130, 200, 0.12);
+    --surface-glass-strong: rgba(255, 255, 255, 0.96);
+
+    --text-primary: #1a1f36;
+    --text-secondary: #4a5068;
+    --text-muted: #7c839a;
+    --text-inverse: #ffffff;
+
+    --accent: #3b7ddd;
+    --accent-hover: #2d6cc7;
+    --accent-dim: rgba(59, 125, 221, 0.08);
+    --accent-glow: 0 0 24px rgba(59, 125, 221, 0.12);
+    --accent-gradient: linear-gradient(135deg, #3b7ddd 0%, #6a5acd 100%);
+    --accent-gradient-hover: linear-gradient(135deg, #2d6cc7 0%, #5a4abf 100%);
+
+    --border: rgba(0, 0, 0, 0.08);
+    --border-hover: rgba(0, 0, 0, 0.14);
+    --border-accent: rgba(59, 125, 221, 0.2);
+    --border-subtle: rgba(0, 0, 0, 0.04);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+    --shadow-glow: 0 0 30px rgba(59, 125, 221, 0.08);
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] body::before {
+    background:
+        radial-gradient(ellipse at 20% 20%, rgba(59, 125, 221, 0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(106, 90, 205, 0.03) 0%, transparent 60%);
+}
+
+[data-theme="light"] body::after {
+    background-image:
+        linear-gradient(rgba(59, 125, 221, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 125, 221, 0.04) 1px, transparent 1px);
+}
+
+[data-theme="light"] .nav::after {
+    background: linear-gradient(90deg, transparent, rgba(59, 125, 221, 0.12), rgba(106, 90, 205, 0.08), transparent);
+}
+
+[data-theme="light"] .hero-card {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 242, 248, 0.95));
+    border-color: rgba(59, 125, 221, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06), 0 0 60px rgba(59, 125, 221, 0.04);
+}
+
+[data-theme="light"] .hero-card h2 {
+    background: linear-gradient(135deg, #1a1f36 0%, #3b7ddd 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+[data-theme="light"] .hero-input-group .form-input {
+    background: rgba(240, 242, 248, 0.9);
+    border-color: rgba(59, 125, 221, 0.12);
+}
+
+[data-theme="light"] .card-value {
+    background: linear-gradient(135deg, #3b7ddd, #6a5acd);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+[data-theme="light"] .stat-card:hover {
+    box-shadow: 0 8px 32px rgba(59, 125, 221, 0.08), 0 0 0 1px rgba(59, 125, 221, 0.06);
+    border-color: rgba(59, 125, 221, 0.12);
+}
+
+[data-theme="light"] .toast-success { background: rgba(52, 208, 122, 0.92); }
+[data-theme="light"] .toast-error { background: rgba(240, 70, 90, 0.92); }
+[data-theme="light"] .toast-info { background: rgba(59, 125, 221, 0.92); }
+
+[data-theme="light"] .phish-card-ai {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(245, 243, 255, 0.8));
+}
+
+[data-theme="light"] .phish-check-item {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+[data-theme="light"] .phish-check-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .phish-stat-value {
+    background: linear-gradient(135deg, #3b7ddd, #6a5acd);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* ── Lucide Icon Sizes ─────────────────────────────────────────── */
+.lucide-nav-brand { width: 18px; height: 18px; stroke-width: 2.5; }
+.lucide-nav { width: 16px; height: 16px; stroke-width: 2; }
+.lucide-btn { width: 16px; height: 16px; stroke-width: 2.5; }
+.lucide-btn-sm { width: 14px; height: 14px; stroke-width: 2; }
+.lucide-heading { width: 22px; height: 22px; stroke-width: 2; vertical-align: -3px; }
+.lucide-section { width: 18px; height: 18px; stroke-width: 2; vertical-align: -3px; }
+.lucide-card { width: 20px; height: 20px; stroke-width: 2; color: var(--accent); }
+.lucide-alert { width: 18px; height: 18px; stroke-width: 2; }
+.lucide-panel { width: 16px; height: 16px; stroke-width: 2; color: var(--accent); }
+.lucide-target { width: 28px; height: 28px; stroke-width: 1.5; color: var(--accent); }
+.lucide-empty { width: 48px; height: 48px; stroke-width: 1.2; color: var(--text-muted); }
+.lucide-radio-icon { width: 24px; height: 24px; stroke-width: 1.8; color: var(--accent); }
+.lucide-inline { width: 12px; height: 12px; stroke-width: 2; vertical-align: -2px; }
+.lucide-complete { width: 56px; height: 56px; stroke-width: 1.5; color: var(--status-complete); }
+
+/* Phishing page icon sizes */
+.lucide-hero { width: 24px; height: 24px; stroke-width: 2; color: white; }
+.lucide-input { width: 18px; height: 18px; stroke-width: 2; }
+.lucide-step { width: 14px; height: 14px; stroke-width: 2; }
+.lucide-feature { width: 16px; height: 16px; stroke-width: 2; }
+.lucide-verdict { width: 28px; height: 28px; stroke-width: 2; }
+.lucide-brand-alert { width: 24px; height: 24px; stroke-width: 2; color: var(--sev-critical); }
+.lucide-card-h { width: 18px; height: 18px; stroke-width: 2; }
+.lucide-live { width: 16px; height: 16px; stroke-width: 2; }
+.lucide-check { width: 16px; height: 16px; stroke-width: 2; }
+
+/* ── Severity Dots (replacing emoji circles) ───────────────────── */
+.sev-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.sev-dot-critical { background: var(--sev-critical); box-shadow: 0 0 6px rgba(240, 70, 90, 0.4); }
+.sev-dot-high     { background: var(--sev-high);     box-shadow: 0 0 6px rgba(245, 146, 62, 0.4); }
+.sev-dot-medium   { background: var(--sev-medium);   box-shadow: 0 0 6px rgba(228, 190, 58, 0.4); }
+.sev-dot-low      { background: var(--sev-low);      box-shadow: 0 0 6px rgba(61, 142, 240, 0.4); }
+.sev-dot-info     { background: var(--sev-info);      box-shadow: 0 0 6px rgba(106, 117, 144, 0.3); }
+
+/* ── Theme Toggle Button ───────────────────────────────────────── */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    transform: scale(1.05);
+}
+
+.theme-toggle-btn .theme-icon-light,
+.theme-toggle-btn .theme-icon-dark {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    position: absolute;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Dark mode: show sun icon, hide moon */
+[data-theme="dark"] .theme-icon-light {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+    color: #fbbf24;
+}
+[data-theme="dark"] .theme-icon-dark {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+}
+
+/* Light mode: show moon icon, hide sun */
+[data-theme="light"] .theme-icon-light {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+}
+[data-theme="light"] .theme-icon-dark {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+    color: #6366f1;
+}
+
+/* ── Icon Motion Animations ────────────────────────────────────── */
+.lucide-card {
+    transition: transform 0.3s var(--ease-spring);
+}
+
+.stat-card:hover .lucide-card {
+    transform: scale(1.15) rotate(-5deg);
+    animation: iconPulse 0.6s ease-in-out;
+}
+
+.lucide-target {
+    transition: transform 0.3s var(--ease-spring);
+}
+
+.target-card:hover .lucide-target {
+    transform: scale(1.1) rotate(8deg);
+    animation: iconBounce 0.4s ease;
+}
+
+@keyframes iconPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.25) rotate(-8deg); }
+    100% { transform: scale(1.15) rotate(-5deg); }
+}
+
+@keyframes iconBounce {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.2) rotate(12deg); }
+    70% { transform: scale(0.95) rotate(6deg); }
+    100% { transform: scale(1.1) rotate(8deg); }
+}
+
+.lucide-heading {
+    transition: color 0.3s ease;
+}
+
+h2:hover .lucide-heading {
+    color: var(--accent);
+}
+
+/* ── Smooth Theme Transition ───────────────────────────────────── */
+html[data-theme] body,
+html[data-theme] .nav,
+html[data-theme] .card,
+html[data-theme] .hero-card,
+html[data-theme] .btn,
+html[data-theme] .form-input,
+html[data-theme] .form-select,
+html[data-theme] .table th,
+html[data-theme] .table td,
+html[data-theme] .badge,
+html[data-theme] .alert,
+html[data-theme] .settings-section,
+html[data-theme] .scan-panel,
+html[data-theme] .site-footer {
+    transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease, box-shadow 0.35s ease;
+}
+
 /* ── Reset ─────────────────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 

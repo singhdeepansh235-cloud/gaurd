@@ -5,14 +5,14 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>⚙️ Settings</h1>
+    <h1><i data-lucide="settings" class="lucide-heading"></i> Settings</h1>
     <p class="subtitle">Configure default scanning behavior and application preferences</p>
 </div>
 
 <form id="settings-form" onsubmit="return saveSettings(event)">
     <!-- Scan Defaults -->
     <div class="settings-section">
-        <h3>🔍 Scan Defaults</h3>
+        <h3><i data-lucide="search" class="lucide-section"></i> Scan Defaults</h3>
 
         <div class="grid-2">
             <div class="form-group">
@@ -50,7 +50,7 @@
 
     <!-- Appearance -->
     <div class="settings-section">
-        <h3>🎨 Appearance</h3>
+        <h3><i data-lucide="palette" class="lucide-section"></i> Appearance</h3>
 
         <div class="form-group">
             <label class="toggle">
@@ -64,7 +64,7 @@
 
     <!-- About -->
     <div class="settings-section">
-        <h3>ℹ️ About</h3>
+        <h3><i data-lucide="info" class="lucide-section"></i> About</h3>
         <div class="finding-detail-grid" style="grid-template-columns: 140px 1fr;">
             <span class="finding-detail-label">Version</span>
             <span class="finding-detail-value">0.1.0 (Alpha)</span>
@@ -78,7 +78,7 @@
     </div>
 
     <button type="submit" class="btn btn-primary btn-lg" id="save-settings-btn">
-        💾 Save Settings
+        <i data-lucide="save" class="lucide-btn"></i> Save Settings
     </button>
 </form>
 {% endblock %}
@@ -89,7 +89,8 @@ async function saveSettings(e) {
     e.preventDefault();
     const btn = document.getElementById('save-settings-btn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spin">⏳</span> Saving...';
+    btn.innerHTML = '<span class="spin"><i data-lucide="loader" class="lucide-btn"></i></span> Saving...';
+    if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
 
     const settings = {};
     settings.default_profile = document.getElementById('setting-default-profile').value;
@@ -115,7 +116,8 @@ async function saveSettings(e) {
     }
 
     btn.disabled = false;
-    btn.innerHTML = '💾 Save Settings';
+    btn.innerHTML = '<i data-lucide="save" class="lucide-btn"></i> Save Settings';
+    if (typeof lucide !== 'undefined') lucide.createIcons({nameAttr: 'data-lucide'});
     return false;
 }
 </script>
