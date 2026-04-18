@@ -1,0 +1,14 @@
+{
+  "services": {
+    "web": {
+      "builder": "dockerfile",
+      "dockerfile": "./Dockerfile",
+      "domain": null
+    },
+    "testserver": {
+      "builder": "dockerfile",
+      "dockerfile": "./Dockerfile.testserver",
+      "domain": null
+    }
+  }
+}
