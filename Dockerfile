@@ -39,4 +39,5 @@ RUN python -m playwright install --with-deps
 
 COPY . .
 
+EXPOSE 8080
 CMD ["python", "-m", "sentinal_fuzz.web", "--host", "0.0.0.0"]
