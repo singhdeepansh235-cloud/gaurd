@@ -17,11 +17,14 @@ def main() -> None:
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
     args = parser.parse_args()
 
+    import os
+    port = int(os.environ.get("PORT", args.port))
+
     print()
     print("=" * 60)
     print("  [*] Sentinal-Fuzz Web Interface")
     print("=" * 60)
-    print(f"  Open in browser: http://{args.host}:{args.port}")
+    print(f"  Open in browser: http://{args.host}:{port}")
     print("=" * 60)
     print()
 
@@ -29,7 +32,7 @@ def main() -> None:
         "sentinal_fuzz.web.app:create_app",
         factory=True,
         host=args.host,
-        port=args.port,
+        port=port,
         reload=args.reload,
     )
 

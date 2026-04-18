@@ -1,2 +1,2 @@
-web: uvicorn sentinal_fuzz.web.app:create_app --host 0.0.0.0 --port ${PORT:-8080}
+web: python -m sentinal_fuzz.web --host 0.0.0.0
 testserver: python test_server.py
