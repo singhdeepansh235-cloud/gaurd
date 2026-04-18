@@ -199,6 +199,18 @@ You'll typically want 2 or 3 terminals open:
 
 ---
 
+## 📡 Deploying the Test Server Separately
+
+The vulnerable test server can be deployed as its own service, separate from the web dashboard. In Railway, create a second service that uses `Dockerfile.testserver` and binds to the Railway-provided `PORT`.
+
+When deployed separately, use the published URL as the scan target. Example:
+
+```bash
+sentinal-fuzz scan https://your-test-server-url --profile quick
+```
+
+If you want both services to run together locally, use the web dashboard at `http://127.0.0.1:8080` and the test server at `http://127.0.0.1:8899`.
+
 ## 🎯 Practice Targets
 
 These are open-source apps intentionally built with vulnerabilities for security testing:

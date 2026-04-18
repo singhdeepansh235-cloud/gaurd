@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+  testserver:
+    build:
+      context: .
+      dockerfile: Dockerfile.testserver
+    ports:
+      - "8899:8899"
+    environment:
+      - PORT=8899

@@ -10,6 +10,7 @@ Then in another terminal:
     sentinal-fuzz scan http://localhost:8899 --profile quick
 """
 
+import os
 from aiohttp import web
 import json
 
@@ -249,7 +250,10 @@ if __name__ == "__main__":
     print("  [WARNING] DO NOT use in production!")
     print("=" * 60)
     print()
-    print("  Server running at: http://localhost:8899")
+    host = os.environ.get("HOST", "0.0.0.0")
+    port = int(os.environ.get("PORT", "8899"))
+    public_host = host if host != "0.0.0.0" else "localhost"
+    print(f"  Server running at: http://{public_host}:{port}")
     print()
     print("  Endpoints:")
     print("    /           - Home page with links & forms")
@@ -265,4 +269,4 @@ if __name__ == "__main__":
     print()
     print("  To scan: sentinal-fuzz scan http://localhost:8899")
     print("=" * 60)
-    web.run_app(create_app(), host="127.0.0.1", port=8899)
+    web.run_app(create_app(), host=host, port=port)
