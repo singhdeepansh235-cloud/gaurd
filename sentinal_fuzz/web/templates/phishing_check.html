@@ -4,134 +4,325 @@
 {% block title %}Phishing Check — Sentinal-Fuzz{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>🎣 Phishing Detection</h1>
-    <p class="subtitle">Comprehensive URL analysis — brand impersonation, homoglyph attacks, suspicious TLDs, and more.</p>
+<!-- ─── Hero Section ─── -->
+<div class="phish-hero">
+    <div class="phish-hero-bg"></div>
+    <div class="phish-hero-content">
+        <div class="phish-hero-badge">
+            <span class="phish-hero-badge-dot"></span>
+            REAL-TIME THREAT ANALYSIS
+        </div>
+        <h1 class="phish-hero-title">
+            <span class="phish-hero-icon">🛡️</span>
+            Phishing Intelligence Scanner
+        </h1>
+        <p class="phish-hero-subtitle">
+            Multi-layer URL analysis with live DNS, SSL, HTTP content scanning, WHOIS domain age,
+            credential harvesting detection, and AI-powered threat assessment.
+        </p>
+    </div>
 </div>
 
-<div class="grid-2">
-    <div class="card mb-20">
-        <h3 class="mb-16">Target Input</h3>
-        <form id="phishing-form" onsubmit="return runPhishingCheck(event)">
-            <div class="form-group">
-                <label class="form-label">URL or Domain <span class="required">*</span></label>
-                <input type="text"
-                       class="form-input"
-                       id="phishing-target"
-                       placeholder="https://accounts-g00gle-security.com"
-                       required
-                       autocomplete="off"
-                       style="font-size: 1.05rem; padding: 14px 18px;">
-                <p class="form-hint">Supports full URLs and raw domains. Sentinel extracts the hostname automatically.</p>
-            </div>
+<!-- ─── Input Section ─── -->
+<div class="phish-input-section">
+    <form id="phishing-form" onsubmit="return runPhishingCheck(event)">
+        <div class="phish-input-wrap">
+            <div class="phish-input-icon">🔗</div>
+            <input type="text"
+                   class="phish-input"
+                   id="phishing-target"
+                   placeholder="Paste any URL or domain to analyze..."
+                   required
+                   autocomplete="off"
+                   spellcheck="false">
+            <button type="submit" class="phish-submit-btn" id="phishing-submit-btn">
+                <span class="phish-submit-text">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Analyze
+                </span>
+                <span class="phish-submit-loading hidden">
+                    <div class="phish-spinner"></div>
+                    Scanning...
+                </span>
+            </button>
+        </div>
+        <p class="phish-input-hint">Supports full URLs (https://...) and raw domains. We run 18+ security checks automatically.</p>
+    </form>
 
-            <div class="mt-12">
-                <p class="text-xs text-muted mb-8">Quick examples:</p>
-                <div class="flex gap-8 flex-wrap">
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('https://google.com')">✅ Trusted</button>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('http://g00gle-security-alert.com')">⚠️ Lookalike</button>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('http://192.168.10.24/login')">🔢 IP-based</button>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('paypal-secure.xyz')">🌐 Bad TLD</button>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('login.banking-secure.tk/verify')">🔑 Keywords</button>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="setPhishingTarget('bit.ly/3xR4f9')">🔗 Shortener</button>
+    <!-- Quick example chips -->
+    <div class="phish-examples">
+        <span class="phish-examples-label">Try examples:</span>
+        <button type="button" class="phish-chip phish-chip-safe" onclick="setPhishingTarget('https://google.com')">
+            <span class="phish-chip-dot safe"></span> google.com
+        </button>
+        <button type="button" class="phish-chip phish-chip-danger" onclick="setPhishingTarget('http://g00gle-security-alert.com')">
+            <span class="phish-chip-dot danger"></span> g00gle-security-alert.com
+        </button>
+        <button type="button" class="phish-chip phish-chip-danger" onclick="setPhishingTarget('http://192.168.10.24/login')">
+            <span class="phish-chip-dot danger"></span> 192.168.10.24/login
+        </button>
+        <button type="button" class="phish-chip phish-chip-warning" onclick="setPhishingTarget('paypal-secure.xyz')">
+            <span class="phish-chip-dot warning"></span> paypal-secure.xyz
+        </button>
+        <button type="button" class="phish-chip phish-chip-danger" onclick="setPhishingTarget('login.banking-secure.tk/verify')">
+            <span class="phish-chip-dot danger"></span> banking-secure.tk
+        </button>
+        <button type="button" class="phish-chip phish-chip-warning" onclick="setPhishingTarget('bit.ly/3xR4f9')">
+            <span class="phish-chip-dot warning"></span> bit.ly/3xR4f9
+        </button>
+    </div>
+</div>
+
+<!-- ─── Scan Progress ─── -->
+<div id="scan-progress" class="scan-progress hidden">
+    <div class="scan-progress-bar">
+        <div class="scan-progress-fill" id="scan-progress-fill"></div>
+        <div class="scan-progress-glow"></div>
+    </div>
+    <div class="scan-progress-steps">
+        <div class="scan-step" id="step-heuristic">
+            <div class="scan-step-icon">🔍</div>
+            <span>Heuristic Analysis</span>
+        </div>
+        <div class="scan-step" id="step-dns">
+            <div class="scan-step-icon">🌐</div>
+            <span>DNS Resolution</span>
+        </div>
+        <div class="scan-step" id="step-ssl">
+            <div class="scan-step-icon">🔒</div>
+            <span>SSL Certificate</span>
+        </div>
+        <div class="scan-step" id="step-http">
+            <div class="scan-step-icon">📡</div>
+            <span>HTTP Analysis</span>
+        </div>
+        <div class="scan-step" id="step-whois">
+            <div class="scan-step-icon">📋</div>
+            <span>WHOIS Lookup</span>
+        </div>
+        <div class="scan-step" id="step-ai">
+            <div class="scan-step-icon">🤖</div>
+            <span>AI Assessment</span>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Empty State ─── -->
+<div id="phishing-empty-state" class="phish-empty">
+    <div class="phish-empty-illustration">
+        <div class="phish-empty-shield">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="url(#shieldGrad)" stroke-width="1.5">
+                <defs>
+                    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#4d9eff"/>
+                        <stop offset="100%" style="stop-color:#7c6cf0"/>
+                    </linearGradient>
+                </defs>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <div class="phish-empty-pulse"></div>
+        </div>
+        <h3>Ready to scan</h3>
+        <p>Enter a URL above and our multi-engine scanner will analyze it across 18+ threat indicators in real-time.</p>
+        <div class="phish-empty-features">
+            <div class="phish-empty-feature">
+                <span>🧠</span> AI-Powered Analysis
+            </div>
+            <div class="phish-empty-feature">
+                <span>🔒</span> SSL Verification
+            </div>
+            <div class="phish-empty-feature">
+                <span>🌐</span> DNS Checks
+            </div>
+            <div class="phish-empty-feature">
+                <span>📡</span> Live Content Scan
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Results Section ─── -->
+<div id="phishing-result" class="hidden">
+
+    <!-- ── Top verdict bar ── -->
+    <div class="phish-verdict-bar" id="phish-verdict-bar">
+        <div class="phish-verdict-left">
+            <div class="phish-verdict-icon" id="phish-verdict-icon">🚨</div>
+            <div>
+                <div class="phish-verdict-status" id="phish-verdict-status">Likely Phishing</div>
+                <div class="phish-verdict-domain" id="phish-verdict-domain">example.com</div>
+            </div>
+        </div>
+        <div class="phish-verdict-right">
+            <div class="phish-risk-gauge">
+                <svg viewBox="0 0 120 120" class="phish-risk-svg">
+                    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
+                    <circle cx="60" cy="60" r="52" fill="none" stroke-width="10" stroke-linecap="round"
+                            class="phish-risk-arc" id="phish-risk-arc"
+                            stroke-dasharray="326.73"
+                            stroke-dashoffset="326.73"
+                            transform="rotate(-90 60 60)"/>
+                </svg>
+                <div class="phish-risk-value">
+                    <span class="phish-risk-number" id="phish-risk-number">0</span>
+                    <span class="phish-risk-label">Risk Score</span>
                 </div>
             </div>
-
-            <div class="alert alert-warning mt-16">
-                <span class="alert-icon">ℹ️</span>
-                <div>Multi-layer heuristic analysis — checks 12 phishing indicators including brand similarity, homoglyphs, TLDs, keywords, and URL structure.</div>
-            </div>
-
-            <div class="flex gap-12 mt-20">
-                <button type="submit" class="btn btn-primary btn-lg" id="phishing-submit-btn">
-                    🔎 Analyze URL
-                </button>
-                <a href="/scan/new" class="btn btn-secondary btn-lg">Open Fuzzing Scan</a>
-            </div>
-        </form>
+        </div>
     </div>
 
-    <div class="card mb-20" id="phishing-result-card">
-        <h3 class="mb-16">Analysis Result</h3>
-        <div id="phishing-empty-state" class="empty-state" style="padding: 24px 12px;">
-            <div class="empty-state-icon">🛡️</div>
-            <h3>No result yet</h3>
-            <p>Enter a URL and click Analyze to see comprehensive phishing detection results.</p>
+    <!-- ── Brand impersonation alert ── -->
+    <div class="phish-brand-alert hidden" id="brand-match-section">
+        <div class="phish-brand-alert-icon">⚠️</div>
+        <div class="phish-brand-alert-content">
+            <strong>Brand Impersonation Detected</strong>
+            <p>This domain appears to impersonate <strong id="brand-match-name"></strong>.
+               The legitimate domain is <code id="brand-match-legitimate"></code>.</p>
+        </div>
+    </div>
+
+    <!-- ── Stats row ── -->
+    <div class="phish-stats-row">
+        <div class="phish-stat">
+            <div class="phish-stat-value" id="stat-checks-count">18</div>
+            <div class="phish-stat-label">Checks Run</div>
+        </div>
+        <div class="phish-stat">
+            <div class="phish-stat-value" id="stat-flags-count">0</div>
+            <div class="phish-stat-label">Flags Raised</div>
+        </div>
+        <div class="phish-stat">
+            <div class="phish-stat-value" id="stat-confidence">0%</div>
+            <div class="phish-stat-label">Confidence</div>
+        </div>
+        <div class="phish-stat">
+            <div class="phish-stat-value" id="stat-scan-time">0s</div>
+            <div class="phish-stat-label">Scan Time</div>
+        </div>
+    </div>
+
+    <!-- ── Main content grid ── -->
+    <div class="phish-grid">
+
+        <!-- Left: Findings + Live checks -->
+        <div class="phish-grid-left">
+
+            <!-- Findings -->
+            <div class="phish-card phish-card-findings" id="findings-card">
+                <div class="phish-card-header">
+                    <h3><span>🔍</span> Threat Findings</h3>
+                    <span class="phish-card-badge" id="findings-count-badge">0</span>
+                </div>
+                <div id="phishing-reasons-container"></div>
+                <div id="phishing-no-reasons" class="hidden phish-all-clear">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#34d07a" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <p>No phishing indicators detected — this URL appears to be legitimate.</p>
+                </div>
+            </div>
+
+            <!-- Live Infrastructure Checks -->
+            <div class="phish-card">
+                <div class="phish-card-header">
+                    <h3><span>📡</span> Live Infrastructure Analysis</h3>
+                </div>
+
+                <!-- DNS -->
+                <div class="phish-live-check" id="live-dns">
+                    <div class="phish-live-header">
+                        <span class="phish-live-icon">🌐</span>
+                        <span class="phish-live-title">DNS Resolution</span>
+                        <span class="phish-live-status" id="dns-status">—</span>
+                    </div>
+                    <div class="phish-live-detail" id="dns-detail"></div>
+                </div>
+
+                <!-- SSL -->
+                <div class="phish-live-check" id="live-ssl">
+                    <div class="phish-live-header">
+                        <span class="phish-live-icon">🔒</span>
+                        <span class="phish-live-title">SSL Certificate</span>
+                        <span class="phish-live-status" id="ssl-status">—</span>
+                    </div>
+                    <div class="phish-live-detail" id="ssl-detail"></div>
+                </div>
+
+                <!-- HTTP -->
+                <div class="phish-live-check" id="live-http">
+                    <div class="phish-live-header">
+                        <span class="phish-live-icon">📡</span>
+                        <span class="phish-live-title">HTTP Response</span>
+                        <span class="phish-live-status" id="http-status">—</span>
+                    </div>
+                    <div class="phish-live-detail" id="http-detail"></div>
+                </div>
+
+                <!-- WHOIS -->
+                <div class="phish-live-check" id="live-whois">
+                    <div class="phish-live-header">
+                        <span class="phish-live-icon">📋</span>
+                        <span class="phish-live-title">Domain Age (WHOIS)</span>
+                        <span class="phish-live-status" id="whois-status">—</span>
+                    </div>
+                    <div class="phish-live-detail" id="whois-detail"></div>
+                </div>
+
+                <!-- Security Headers -->
+                <div class="phish-live-check" id="live-headers">
+                    <div class="phish-live-header">
+                        <span class="phish-live-icon">🛡️</span>
+                        <span class="phish-live-title">Security Headers</span>
+                        <span class="phish-live-status" id="headers-status">—</span>
+                    </div>
+                    <div class="phish-live-detail" id="headers-detail"></div>
+                </div>
+
+                <!-- Content Analysis -->
+                <div class="phish-live-check" id="live-content">
+                    <div class="phish-live-header">
+                        <span class="phish-live-icon">🕵️</span>
+                        <span class="phish-live-title">Page Content Analysis</span>
+                        <span class="phish-live-status" id="content-status">—</span>
+                    </div>
+                    <div class="phish-live-detail" id="content-detail"></div>
+                </div>
+            </div>
         </div>
 
-        <div id="phishing-result" class="hidden">
-            <!-- Status + Risk Score cards -->
-            <div class="grid-2 mb-16">
-                <div class="card stat-card">
-                    <div class="card-header">
-                        <span class="card-title">Verdict</span>
-                        <span class="card-icon" id="phishing-status-icon">🚨</span>
-                    </div>
-                    <div class="card-value" id="phishing-status-text" style="font-size: 1.5rem;"></div>
-                    <span class="card-footer" id="phishing-domain-text"></span>
+        <!-- Right: Security checks + AI -->
+        <div class="phish-grid-right">
+
+            <!-- Heuristic checks -->
+            <div class="phish-card">
+                <div class="phish-card-header">
+                    <h3><span>🧪</span> Heuristic Checks</h3>
                 </div>
-                <div class="card stat-card">
-                    <div class="card-header">
-                        <span class="card-title">Risk Score</span>
-                        <span class="card-icon">📊</span>
-                    </div>
-                    <div class="card-value" id="phishing-risk-score" style="font-size: 1.5rem;"></div>
-                    <span class="card-footer">Confidence: <span id="phishing-confidence-text"></span></span>
-                </div>
+                <div class="phish-checks-grid" id="security-checks-grid"></div>
             </div>
 
-            <!-- Matched brand info -->
-            <div class="mb-16" id="brand-match-section" style="display:none;">
-                <div class="alert alert-warning">
-                    <span class="alert-icon">⚠️</span>
-                    <div>
-                        <strong>Brand Impersonation Detected:</strong>
-                        This domain appears to impersonate <strong id="brand-match-name"></strong>.
-                        The legitimate domain is <code id="brand-match-legitimate"></code>.
-                    </div>
+            <!-- AI Engine -->
+            <div class="phish-card phish-card-ai">
+                <div class="phish-card-header">
+                    <h3><span>🤖</span> AI Analysis Engine</h3>
+                    <span class="phish-ai-badge" id="analysis-engine-model">gemini</span>
                 </div>
-            </div>
-
-            <!-- Reasons -->
-            <div class="mb-16">
-                <h4 class="mb-8">🔍 Findings</h4>
-                <div id="phishing-reasons-container"></div>
-                <div id="phishing-no-reasons" class="hidden" style="color: var(--status-complete); padding: 12px;">
-                    ✅ No phishing indicators were detected.
+                <div class="phish-ai-status" id="analysis-engine-status"></div>
+                <div class="phish-ai-verdict-row">
+                    <span class="phish-ai-verdict-label">AI Verdict:</span>
+                    <span class="phish-ai-verdict" id="analysis-engine-verdict"></span>
                 </div>
-            </div>
-
-            <!-- Security checks grid -->
-            <div class="mb-16">
-                <h4 class="mb-12">🧪 Security Checks</h4>
-                <div class="grid-2" id="security-checks-grid" style="gap: 8px;"></div>
+                <div class="phish-ai-summary" id="analysis-engine-summary"></div>
+                <div class="phish-ai-signals">
+                    <strong>Signals:</strong>
+                    <ul id="analysis-engine-signals"></ul>
+                </div>
             </div>
 
             <!-- Summary -->
-            <div class="alert alert-info mb-16">
-                <span class="alert-icon">🧠</span>
-                <div id="phishing-summary-text"></div>
-            </div>
-
-            <!-- Gemini Analysis Engine -->
-            <div class="card mt-16">
-                <div class="flex items-center justify-between mb-8">
-                    <h4>🤖 AI Analysis Engine</h4>
-                    <span class="badge badge-info" id="analysis-engine-model">gemini</span>
+            <div class="phish-card phish-card-summary">
+                <div class="phish-card-header">
+                    <h3><span>📝</span> Analysis Summary</h3>
                 </div>
-                <p class="text-sm text-muted mb-12" id="analysis-engine-status"></p>
-                <div class="mb-12">
-                    <strong>Verdict:</strong>
-                    <span id="analysis-engine-verdict"></span>
-                </div>
-                <div class="mb-12">
-                    <strong>Summary:</strong>
-                    <div id="analysis-engine-summary" class="mt-8"></div>
-                </div>
-                <div>
-                    <strong>Signals:</strong>
-                    <ul id="analysis-engine-signals" class="text-sm" style="padding-left: 18px;"></ul>
-                </div>
+                <div class="phish-summary-text" id="phishing-summary-text"></div>
             </div>
         </div>
     </div>
@@ -140,99 +331,768 @@
 
 {% block scripts %}
 <style>
-    .check-item {
+    /* ═══════════════════════════════════════════════════════════════
+       PHISHING CHECK — PREMIUM UI
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Hero ── */
+    .phish-hero {
+        position: relative;
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        padding: 40px 36px 32px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(77, 158, 255, 0.08);
+    }
+    .phish-hero-bg {
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(ellipse at 30% 0%, rgba(77, 158, 255, 0.08) 0%, transparent 60%),
+            radial-gradient(ellipse at 80% 100%, rgba(124, 108, 240, 0.06) 0%, transparent 50%),
+            linear-gradient(135deg, rgba(14, 20, 35, 0.95), rgba(20, 27, 45, 0.9));
+        z-index: 0;
+    }
+    .phish-hero-content { position: relative; z-index: 1; }
+    .phish-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: rgba(77, 158, 255, 0.08);
+        padding: 6px 14px;
+        border-radius: var(--radius-full);
+        margin-bottom: 16px;
+        border: 1px solid rgba(77, 158, 255, 0.12);
+    }
+    .phish-hero-badge-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #34d07a;
+        animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(52, 208, 122, 0.5); }
+        50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(52, 208, 122, 0); }
+    }
+    .phish-hero-title {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        border-radius: 8px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.06);
-        font-size: 0.85rem;
-        transition: all 0.2s ease;
+        gap: 14px;
+        margin-bottom: 8px;
     }
-    .check-item:hover {
-        background: rgba(255,255,255,0.06);
-        border-color: rgba(255,255,255,0.1);
-    }
-    .check-icon {
-        font-size: 1.1rem;
-        flex-shrink: 0;
-        width: 24px;
-        text-align: center;
-    }
-    .check-label {
-        flex: 1;
-        color: var(--text-secondary, #94a3b8);
-    }
-    .check-status {
-        font-weight: 600;
-        font-size: 0.8rem;
-        padding: 2px 8px;
-        border-radius: 4px;
-    }
-    .check-pass {
-        color: var(--status-complete, #22c55e);
-        background: rgba(34, 197, 94, 0.1);
-    }
-    .check-fail {
-        color: var(--sev-critical, #ef4444);
-        background: rgba(239, 68, 68, 0.1);
-    }
-    .check-warn {
-        color: var(--sev-medium, #f59e0b);
-        background: rgba(245, 158, 11, 0.1);
-    }
-    .finding-item {
+    .phish-hero-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--accent-gradient);
+        border-radius: 14px;
         display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 10px 14px;
-        margin-bottom: 6px;
-        border-radius: 8px;
-        background: rgba(239, 68, 68, 0.06);
-        border-left: 3px solid var(--sev-medium, #f59e0b);
-        font-size: 0.88rem;
-        line-height: 1.5;
-        color: var(--text-primary, #e2e8f0);
-        transition: all 0.2s ease;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 20px rgba(77, 158, 255, 0.25);
     }
-    .finding-item:hover {
-        background: rgba(239, 68, 68, 0.1);
+    .phish-hero-subtitle {
+        color: var(--text-muted);
+        font-size: 0.92rem;
+        max-width: 680px;
+        line-height: 1.6;
     }
-    .finding-item.critical {
-        border-left-color: var(--sev-critical, #ef4444);
-        background: rgba(239, 68, 68, 0.08);
+
+    /* ── Input ── */
+    .phish-input-section {
+        margin-bottom: 28px;
     }
-    .risk-gauge {
+    .phish-input-wrap {
+        display: flex;
+        align-items: center;
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        border-radius: 16px;
+        padding: 6px 6px 6px 18px;
+        transition: all 0.3s ease;
+        gap: 12px;
+    }
+    .phish-input-wrap:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px rgba(77, 158, 255, 0.1), 0 4px 24px rgba(77, 158, 255, 0.08);
+    }
+    .phish-input-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        opacity: 0.5;
+    }
+    .phish-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        color: var(--text-primary);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.95rem;
+        padding: 12px 0;
+        outline: none;
+    }
+    .phish-input::placeholder {
+        color: var(--text-muted);
+        font-family: 'Inter', sans-serif;
+    }
+    .phish-submit-btn {
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-top: 4px;
+        padding: 12px 28px;
+        background: var(--accent-gradient);
+        color: white;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-family: 'Inter', sans-serif;
     }
-    .risk-gauge-bar {
-        flex: 1;
-        height: 8px;
-        border-radius: 4px;
-        background: rgba(255,255,255,0.08);
-        overflow: hidden;
+    .phish-submit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px rgba(77, 158, 255, 0.35);
     }
-    .risk-gauge-fill {
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.6s ease-out, background 0.3s ease;
+    .phish-submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+    .phish-submit-text, .phish-submit-loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .phish-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2.5px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin-fast 0.6s linear infinite;
+    }
+    @keyframes spin-fast {
+        to { transform: rotate(360deg); }
+    }
+    .phish-input-hint {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 8px;
+        padding-left: 4px;
     }
 
+    /* ── Example chips ── */
+    .phish-examples {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+    }
+    .phish-examples-label {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+    .phish-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: var(--radius-full);
+        font-size: 0.76rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
+    }
+    .phish-chip:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: var(--border-hover);
+        transform: translateY(-1px);
+    }
+    .phish-chip-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+    .phish-chip-dot.safe { background: #34d07a; }
+    .phish-chip-dot.warning { background: #e4be3a; }
+    .phish-chip-dot.danger { background: #f0465a; }
+
+    /* ── Scan Progress ── */
+    .scan-progress {
+        margin-bottom: 28px;
+        padding: 20px 24px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+    .scan-progress-bar {
+        height: 4px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 18px;
+    }
+    .scan-progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--accent-gradient);
+        border-radius: var(--radius-full);
+        transition: width 0.4s ease;
+        position: relative;
+    }
+    .scan-progress-glow {
+        position: absolute;
+        top: -4px;
+        left: 0;
+        right: 0;
+        bottom: -4px;
+        background: linear-gradient(90deg, transparent, rgba(77, 158, 255, 0.3), transparent);
+        animation: scan-glow 2s ease-in-out infinite;
+    }
+    @keyframes scan-glow {
+        0%, 100% { transform: translateX(-100%); }
+        50% { transform: translateX(100%); }
+    }
+    .scan-progress-steps {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .scan-step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        transition: all 0.3s ease;
+        opacity: 0.4;
+    }
+    .scan-step.active {
+        color: var(--accent);
+        opacity: 1;
+    }
+    .scan-step.done {
+        color: var(--status-complete);
+        opacity: 1;
+    }
+    .scan-step-icon {
+        font-size: 0.9rem;
+    }
+
+    /* ── Empty state ── */
+    .phish-empty {
+        text-align: center;
+        padding: 60px 20px 80px;
+    }
+    .phish-empty-illustration {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .phish-empty-shield {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 24px;
+    }
+    .phish-empty-pulse {
+        position: absolute;
+        inset: -20px;
+        border-radius: 50%;
+        border: 1px solid rgba(77, 158, 255, 0.15);
+        animation: empty-pulse 3s ease-in-out infinite;
+    }
+    @keyframes empty-pulse {
+        0%, 100% { transform: scale(0.8); opacity: 0; }
+        50% { transform: scale(1.2); opacity: 1; }
+    }
+    .phish-empty h3 {
+        font-size: 1.3rem;
+        margin-bottom: 8px;
+    }
+    .phish-empty p {
+        color: var(--text-muted);
+        font-size: 0.88rem;
+        line-height: 1.6;
+        max-width: 440px;
+        margin: 0 auto;
+    }
+    .phish-empty-features {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 28px;
+        flex-wrap: wrap;
+    }
+    .phish-empty-feature {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        padding: 6px 14px;
+        background: rgba(77, 158, 255, 0.04);
+        border-radius: var(--radius-full);
+        border: 1px solid var(--border);
+    }
+
+    /* ── Verdict Bar ── */
+    .phish-verdict-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 28px;
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+        background: var(--bg-card);
+        position: relative;
+        overflow: hidden;
+    }
+    .phish-verdict-bar::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: 0.04;
+        pointer-events: none;
+    }
+    .phish-verdict-bar.verdict-safe { border-color: rgba(52, 208, 122, 0.2); }
+    .phish-verdict-bar.verdict-safe::before { background: linear-gradient(135deg, #34d07a, transparent 60%); }
+    .phish-verdict-bar.verdict-suspicious { border-color: rgba(228, 190, 58, 0.2); }
+    .phish-verdict-bar.verdict-suspicious::before { background: linear-gradient(135deg, #e4be3a, transparent 60%); }
+    .phish-verdict-bar.verdict-phishing { border-color: rgba(240, 70, 90, 0.2); }
+    .phish-verdict-bar.verdict-phishing::before { background: linear-gradient(135deg, #f0465a, transparent 60%); }
+
+    .phish-verdict-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .phish-verdict-icon {
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        font-size: 1.8rem;
+    }
+    .phish-verdict-status {
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+    .phish-verdict-domain {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    /* ── Risk Gauge ── */
+    .phish-risk-gauge {
+        position: relative;
+        width: 110px;
+        height: 110px;
+    }
+    .phish-risk-svg {
+        width: 100%;
+        height: 100%;
+    }
+    .phish-risk-arc {
+        transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+                    stroke 0.5s ease;
+    }
+    .phish-risk-value {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .phish-risk-number {
+        font-size: 1.8rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .phish-risk-label {
+        font-size: 0.62rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 2px;
+    }
+
+    /* ── Brand Alert ── */
+    .phish-brand-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 20px;
+        border-radius: var(--radius-lg);
+        background: rgba(240, 70, 90, 0.06);
+        border: 1px solid rgba(240, 70, 90, 0.15);
+        margin-bottom: 20px;
+        animation: alert-slide 0.4s ease-out;
+    }
+    @keyframes alert-slide {
+        from { opacity: 0; transform: translateY(-8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .phish-brand-alert-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .phish-brand-alert-content strong { color: var(--sev-critical); font-size: 0.92rem; }
+    .phish-brand-alert-content p { color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px; }
+    .phish-brand-alert-content code {
+        background: rgba(77, 158, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.82rem;
+        color: var(--accent);
+    }
+
+    /* ── Stats Row ── */
+    .phish-stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .phish-stat {
+        text-align: center;
+        padding: 16px 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+    }
+    .phish-stat-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        background: var(--accent-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .phish-stat-label {
+        font-size: 0.68rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 4px;
+    }
+
+    /* ── Grid ── */
+    .phish-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 20px;
+    }
+    @media (max-width: 900px) {
+        .phish-grid { grid-template-columns: 1fr; }
+        .phish-stats-row { grid-template-columns: repeat(2, 1fr); }
+        .scan-progress-steps { flex-wrap: wrap; }
+    }
+
+    /* ── Cards ── */
+    .phish-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 22px;
+        margin-bottom: 16px;
+    }
+    .phish-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+    .phish-card-header h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .phish-card-header h3 span { font-size: 1.1rem; }
+    .phish-card-badge {
+        background: rgba(240, 70, 90, 0.1);
+        color: var(--sev-critical);
+        font-weight: 700;
+        font-size: 0.72rem;
+        padding: 3px 10px;
+        border-radius: var(--radius-full);
+    }
+
+    /* ── Finding Items ── */
+    .phish-finding {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+        border-radius: var(--radius-md);
+        border-left: 3px solid;
+        font-size: 0.84rem;
+        line-height: 1.55;
+        color: var(--text-primary);
+        transition: all 0.2s ease;
+        animation: finding-in 0.3s ease-out both;
+    }
+    .phish-finding:hover {
+        transform: translateX(4px);
+    }
+    .phish-finding.sev-critical {
+        border-left-color: var(--sev-critical);
+        background: rgba(240, 70, 90, 0.06);
+    }
+    .phish-finding.sev-high {
+        border-left-color: var(--sev-high);
+        background: rgba(245, 146, 62, 0.04);
+    }
+    .phish-finding.sev-medium {
+        border-left-color: var(--sev-medium);
+        background: rgba(228, 190, 58, 0.04);
+    }
+    .phish-finding.sev-low {
+        border-left-color: var(--sev-low);
+        background: rgba(61, 142, 240, 0.04);
+    }
+    .phish-finding-icon {
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    @keyframes finding-in {
+        from { opacity: 0; transform: translateX(-12px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .phish-all-clear {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 28px;
+        text-align: center;
+    }
+    .phish-all-clear p {
+        color: var(--status-complete);
+        font-size: 0.88rem;
+    }
+
+    /* ── Live Check Items ── */
+    .phish-live-check {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+    .phish-live-check:last-child { border-bottom: none; }
+    .phish-live-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .phish-live-icon { font-size: 1rem; flex-shrink: 0; }
+    .phish-live-title {
+        flex: 1;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .phish-live-status {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: var(--radius-full);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .phish-live-status.status-pass {
+        background: rgba(52, 208, 122, 0.1);
+        color: var(--status-complete);
+    }
+    .phish-live-status.status-fail {
+        background: rgba(240, 70, 90, 0.1);
+        color: var(--sev-critical);
+    }
+    .phish-live-status.status-warn {
+        background: rgba(228, 190, 58, 0.1);
+        color: var(--sev-medium);
+    }
+    .phish-live-status.status-info {
+        background: rgba(77, 158, 255, 0.1);
+        color: var(--accent);
+    }
+    .phish-live-status.status-err {
+        background: var(--sev-info-bg);
+        color: var(--sev-info);
+    }
+    .phish-live-detail {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 6px;
+        padding-left: 30px;
+        line-height: 1.6;
+    }
+    .phish-live-detail code {
+        background: rgba(77, 158, 255, 0.08);
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+    }
+
+    /* ── Heuristic Check Grid ── */
+    .phish-checks-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    .phish-check-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px;
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        font-size: 0.82rem;
+        transition: all 0.2s ease;
+    }
+    .phish-check-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.08);
+    }
+    .phish-check-icon { font-size: 1rem; flex-shrink: 0; width: 22px; text-align: center; }
+    .phish-check-label { flex: 1; color: var(--text-secondary); }
+    .phish-check-status {
+        font-weight: 700;
+        font-size: 0.68rem;
+        padding: 2px 9px;
+        border-radius: var(--radius-full);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .phish-check-pass {
+        color: var(--status-complete);
+        background: rgba(52, 208, 122, 0.1);
+    }
+    .phish-check-fail {
+        color: var(--sev-critical);
+        background: rgba(240, 70, 90, 0.1);
+    }
+    .phish-check-warn {
+        color: var(--sev-medium);
+        background: rgba(228, 190, 58, 0.1);
+    }
+
+    /* ── AI Card ── */
+    .phish-card-ai {
+        border-color: rgba(124, 108, 240, 0.12);
+        background: linear-gradient(135deg, rgba(20, 27, 45, 1), rgba(30, 25, 55, 0.7));
+    }
+    .phish-ai-badge {
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: var(--radius-full);
+        background: rgba(124, 108, 240, 0.12);
+        color: var(--accent-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .phish-ai-status {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+    }
+    .phish-ai-verdict-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .phish-ai-verdict-label {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+    .phish-ai-verdict {
+        font-size: 0.92rem;
+        font-weight: 800;
+    }
+    .phish-ai-summary {
+        font-size: 0.82rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 14px;
+        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .phish-ai-signals strong {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+    }
+    .phish-ai-signals ul {
+        padding-left: 18px;
+        margin-top: 6px;
+    }
+    .phish-ai-signals li {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        line-height: 1.5;
+    }
+
+    /* ── Summary Card ── */
+    .phish-card-summary {
+        border-color: rgba(77, 158, 255, 0.1);
+    }
+    .phish-summary-text {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        line-height: 1.7;
+    }
+
+    /* ── Animations ── */
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(12px); }
+        from { opacity: 0; transform: translateY(16px); }
         to { opacity: 1; transform: translateY(0); }
     }
     .animate-in {
-        animation: fadeInUp 0.35s ease-out forwards;
+        animation: fadeInUp 0.4s ease-out forwards;
+    }
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+        .phish-hero { padding: 24px 18px; }
+        .phish-hero-title { font-size: 1.4rem; }
+        .phish-verdict-bar { flex-direction: column; gap: 16px; text-align: center; }
+        .phish-verdict-left { flex-direction: column; align-items: center; }
     }
 </style>
 
 <script>
+let scanStartTime = 0;
+
 function setPhishingTarget(value) {
     const input = document.getElementById('phishing-target');
     input.value = value;
@@ -240,9 +1100,9 @@ function setPhishingTarget(value) {
 }
 
 function statusColor(status) {
-    if (status === 'Likely Phishing') return 'var(--sev-critical, #ef4444)';
-    if (status === 'Suspicious') return 'var(--sev-medium, #f59e0b)';
-    return 'var(--status-complete, #22c55e)';
+    if (status === 'Likely Phishing') return '#f0465a';
+    if (status === 'Suspicious') return '#e4be3a';
+    return '#34d07a';
 }
 
 function statusIcon(status) {
@@ -252,9 +1112,93 @@ function statusIcon(status) {
 }
 
 function riskColor(score) {
-    if (score >= 60) return '#ef4444';
-    if (score >= 30) return '#f59e0b';
-    return '#22c55e';
+    if (score >= 60) return '#f0465a';
+    if (score >= 30) return '#e4be3a';
+    return '#34d07a';
+}
+
+function verdictClass(status) {
+    if (status === 'Likely Phishing') return 'verdict-phishing';
+    if (status === 'Suspicious') return 'verdict-suspicious';
+    return 'verdict-safe';
+}
+
+function findingSeverity(reason, status) {
+    const r = reason.toLowerCase();
+    if (r.includes('nearly identical') || r.includes('credential') || r.includes('password') ||
+        r.includes('self-signed') || r.includes('not registered') || r.includes('ip address'))
+        return 'sev-critical';
+    if (r.includes('impersonat') || r.includes('lookalike') || r.includes('homoglyph') ||
+        r.includes('shortener') || r.includes('punycode') || r.includes('newly registered'))
+        return 'sev-high';
+    if (r.includes('suspicious') || r.includes('keyword') || r.includes('redirect') ||
+        r.includes('free') || r.includes('missing'))
+        return 'sev-medium';
+    return 'sev-low';
+}
+
+function findingIcon(severity) {
+    const icons = {
+        'sev-critical': '🔴',
+        'sev-high': '🟠',
+        'sev-medium': '🟡',
+        'sev-low': '🔵',
+    };
+    return icons[severity] || '⚡';
+}
+
+// ── Scan progress simulation ──
+function showScanProgress() {
+    const progress = document.getElementById('scan-progress');
+    progress.classList.remove('hidden');
+
+    const steps = ['step-heuristic', 'step-dns', 'step-ssl', 'step-http', 'step-whois', 'step-ai'];
+    const fill = document.getElementById('scan-progress-fill');
+    let step = 0;
+
+    const interval = setInterval(() => {
+        if (step < steps.length) {
+            // Mark current as active
+            steps.forEach(s => {
+                document.getElementById(s).classList.remove('active');
+            });
+            document.getElementById(steps[step]).classList.add('active');
+
+            // Mark previous as done
+            for (let i = 0; i < step; i++) {
+                document.getElementById(steps[i]).classList.remove('active');
+                document.getElementById(steps[i]).classList.add('done');
+            }
+
+            fill.style.width = `${((step + 1) / steps.length) * 100}%`;
+            step++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 600);
+
+    return interval;
+}
+
+function hideScanProgress() {
+    const progress = document.getElementById('scan-progress');
+    const fill = document.getElementById('scan-progress-fill');
+    fill.style.width = '100%';
+
+    const steps = ['step-heuristic', 'step-dns', 'step-ssl', 'step-http', 'step-whois', 'step-ai'];
+    steps.forEach(s => {
+        document.getElementById(s).classList.remove('active');
+        document.getElementById(s).classList.add('done');
+    });
+
+    setTimeout(() => {
+        progress.classList.add('hidden');
+        // Reset
+        steps.forEach(s => {
+            document.getElementById(s).classList.remove('done', 'active');
+        });
+        fill.style.width = '0%';
+    }, 800);
 }
 
 async function runPhishingCheck(e) {
@@ -266,7 +1210,15 @@ async function runPhishingCheck(e) {
 
     const btn = document.getElementById('phishing-submit-btn');
     btn.disabled = true;
-    btn.innerHTML = '<span class="spin">⏳</span> Analyzing...';
+    document.querySelector('.phish-submit-text').classList.add('hidden');
+    document.querySelector('.phish-submit-loading').classList.remove('hidden');
+
+    // Hide result, show progress
+    document.getElementById('phishing-result').classList.add('hidden');
+    document.getElementById('phishing-empty-state').classList.add('hidden');
+
+    scanStartTime = performance.now();
+    const progressInterval = showScanProgress();
 
     try {
         const res = await fetch('/api/phishing-check', {
@@ -286,13 +1238,22 @@ async function runPhishingCheck(e) {
         }
 
         const data = await res.json();
-        renderPhishingResult(data);
-        showToast('Phishing analysis complete', 'success');
+        clearInterval(progressInterval);
+        hideScanProgress();
+
+        setTimeout(() => {
+            renderPhishingResult(data);
+            showToast('Phishing analysis complete', 'success');
+        }, 600);
+
     } catch (err) {
+        clearInterval(progressInterval);
+        hideScanProgress();
         showToast('Network error: ' + err.message, 'error');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '🔎 Analyze URL';
+        document.querySelector('.phish-submit-text').classList.remove('hidden');
+        document.querySelector('.phish-submit-loading').classList.add('hidden');
     }
 
     return false;
@@ -301,60 +1262,85 @@ async function runPhishingCheck(e) {
 function renderPhishingResult(data) {
     const result = data.phishing || data;
     const engine = data.analysis_engine || null;
+    const live = data.live_checks || {};
     const checks = result.checks || {};
+    const scanTime = ((performance.now() - scanStartTime) / 1000).toFixed(1);
 
     // Toggle visibility
-    document.getElementById('phishing-empty-state').classList.add('hidden');
     const resultEl = document.getElementById('phishing-result');
     resultEl.classList.remove('hidden');
     resultEl.classList.add('animate-in');
 
-    // ── Status card ──
-    const statusEl = document.getElementById('phishing-status-text');
+    // ── Verdict Bar ──
+    const bar = document.getElementById('phish-verdict-bar');
+    bar.className = 'phish-verdict-bar ' + verdictClass(result.status);
+    document.getElementById('phish-verdict-icon').textContent = statusIcon(result.status);
+    const statusEl = document.getElementById('phish-verdict-status');
     statusEl.textContent = result.status;
     statusEl.style.color = statusColor(result.status);
-    document.getElementById('phishing-status-icon').textContent = statusIcon(result.status);
-    document.getElementById('phishing-domain-text').textContent =
+    document.getElementById('phish-verdict-domain').textContent =
         document.getElementById('phishing-target').value.trim();
 
-    // ── Risk score ──
+    // ── Risk Gauge Animation ──
     const riskScore = data.risk_score || 0;
-    const riskEl = document.getElementById('phishing-risk-score');
-    riskEl.textContent = `${riskScore}/100`;
-    riskEl.style.color = riskColor(riskScore);
-    document.getElementById('phishing-confidence-text').textContent = `${result.confidence || 0}%`;
+    const arc = document.getElementById('phish-risk-arc');
+    const circumference = 326.73;
+    const offset = circumference - (riskScore / 100) * circumference;
+    arc.style.stroke = riskColor(riskScore);
+    arc.style.strokeDashoffset = offset;
+    arc.style.filter = `drop-shadow(0 0 8px ${riskColor(riskScore)}40)`;
 
-    // ── Brand match alert ──
+    const riskNum = document.getElementById('phish-risk-number');
+    riskNum.style.color = riskColor(riskScore);
+    animateCounter(riskNum, 0, riskScore, 1000);
+
+    // ── Brand match ──
     const brandSection = document.getElementById('brand-match-section');
     if (result.matched_brand) {
-        brandSection.style.display = 'block';
+        brandSection.classList.remove('hidden');
         document.getElementById('brand-match-name').textContent = result.matched_brand;
         document.getElementById('brand-match-legitimate').textContent =
             result.matched_domain || result.matched_brand + '.com';
     } else {
-        brandSection.style.display = 'none';
+        brandSection.classList.add('hidden');
     }
 
-    // ── Findings / Reasons ──
+    // ── Stats Row ──
+    const totalChecks = Object.keys(checks).length + 6; // + live checks
+    const flagCount = result.reasons ? result.reasons.length : 0;
+    document.getElementById('stat-checks-count').textContent = totalChecks;
+    document.getElementById('stat-flags-count').textContent = flagCount;
+    document.getElementById('stat-flags-count').style.color = flagCount > 0 ? statusColor(result.status) : '';
+    document.getElementById('stat-confidence').textContent = `${result.confidence || 0}%`;
+    document.getElementById('stat-scan-time').textContent = `${scanTime}s`;
+
+    // ── Findings ──
     const reasonsContainer = document.getElementById('phishing-reasons-container');
     const noReasons = document.getElementById('phishing-no-reasons');
     reasonsContainer.innerHTML = '';
 
     if (result.reasons && result.reasons.length > 0) {
         noReasons.classList.add('hidden');
+        document.getElementById('findings-count-badge').textContent = result.reasons.length;
         result.reasons.forEach((reason, i) => {
+            const sev = findingSeverity(reason, result.status);
             const div = document.createElement('div');
-            div.className = 'finding-item' + (result.status === 'Likely Phishing' && i === 0 ? ' critical' : '');
-            div.innerHTML = `<span style="font-size:1.1rem;">⚡</span> <span>${escapeHtml(reason)}</span>`;
-            div.style.animationDelay = `${i * 0.05}s`;
-            div.classList.add('animate-in');
+            div.className = `phish-finding ${sev}`;
+            div.style.animationDelay = `${i * 0.06}s`;
+            div.innerHTML = `<span class="phish-finding-icon">${findingIcon(sev)}</span><span>${escapeHtml(reason)}</span>`;
             reasonsContainer.appendChild(div);
         });
     } else {
         noReasons.classList.remove('hidden');
+        document.getElementById('findings-count-badge').textContent = '0';
+        document.getElementById('findings-count-badge').style.background = 'rgba(52,208,122,0.1)';
+        document.getElementById('findings-count-badge').style.color = '#34d07a';
     }
 
-    // ── Security checks grid ──
+    // ── Live Checks ──
+    renderLiveChecks(live);
+
+    // ── Heuristic Checks Grid ──
     const checksGrid = document.getElementById('security-checks-grid');
     checksGrid.innerHTML = '';
 
@@ -378,29 +1364,50 @@ function renderPhishingResult(data) {
         const check = checks[def.key];
         if (!check) return;
 
-        const flagged = check.flagged;
-        const passed = check.passed;
         const item = document.createElement('div');
-        item.className = 'check-item';
+        item.className = 'phish-check-item';
 
         let statusClass, statusText;
-        if (passed) {
-            statusClass = 'check-pass';
+        if (check.passed) {
+            statusClass = 'phish-check-pass';
             statusText = 'VERIFIED';
-        } else if (flagged) {
-            statusClass = 'check-fail';
+        } else if (check.flagged) {
+            statusClass = 'phish-check-fail';
             statusText = 'FLAGGED';
         } else {
-            statusClass = 'check-pass';
+            statusClass = 'phish-check-pass';
             statusText = 'CLEAR';
         }
 
         item.innerHTML = `
-            <span class="check-icon">${def.icon}</span>
-            <span class="check-label">${def.label}</span>
-            <span class="check-status ${statusClass}">${statusText}</span>
+            <span class="phish-check-icon">${def.icon}</span>
+            <span class="phish-check-label">${def.label}</span>
+            <span class="phish-check-status ${statusClass}">${statusText}</span>
         `;
         checksGrid.appendChild(item);
+    });
+
+    // ── AI Engine ──
+    document.getElementById('analysis-engine-model').textContent =
+        engine ? `${engine.provider}:${engine.model}` : 'gemini';
+    document.getElementById('analysis-engine-status').innerHTML = engine && engine.enabled
+        ? '<span style="color:#34d07a">●</span> Live AI review is active'
+        : '<span style="color:#f0465a">●</span> AI engine offline — Set GEMINI_API_KEY to enable';
+
+    const verdictEl = document.getElementById('analysis-engine-verdict');
+    verdictEl.textContent = engine ? engine.verdict : result.status;
+    verdictEl.style.color = statusColor(engine ? engine.verdict : result.status);
+
+    document.getElementById('analysis-engine-summary').textContent = engine
+        ? engine.summary
+        : 'AI analysis is disabled. Results are based on heuristic + live network checks.';
+
+    const engineSignalsEl = document.getElementById('analysis-engine-signals');
+    engineSignalsEl.innerHTML = '';
+    ((engine && engine.signals) || []).forEach(signal => {
+        const li = document.createElement('li');
+        li.textContent = signal;
+        engineSignalsEl.appendChild(li);
     });
 
     // ── Summary ──
@@ -409,39 +1416,177 @@ function renderPhishingResult(data) {
         summaryParts.push(`This domain closely resembles the trusted brand "${result.matched_brand}" (legitimate: ${result.matched_domain}).`);
     }
     summaryParts.push(
-        `Sentinel rated this URL as ${result.status.toLowerCase()} with ${result.confidence}% confidence and a risk score of ${riskScore}/100.`
+        `Sentinel rated this URL as <strong style="color:${statusColor(result.status)}">${result.status.toLowerCase()}</strong> with ${result.confidence}% confidence and a risk score of <strong>${riskScore}/100</strong>.`
     );
     if (result.reasons && result.reasons.length > 0) {
-        summaryParts.push(`${result.reasons.length} phishing indicator${result.reasons.length > 1 ? 's' : ''} detected.`);
+        summaryParts.push(`<strong>${result.reasons.length}</strong> phishing indicator${result.reasons.length > 1 ? 's' : ''} detected across heuristic and live network analysis.`);
     } else {
-        summaryParts.push('No phishing indicators were detected.');
+        summaryParts.push('No phishing indicators were detected across all analysis layers.');
     }
-    document.getElementById('phishing-summary-text').textContent = summaryParts.join(' ');
+    document.getElementById('phishing-summary-text').innerHTML = summaryParts.join(' ');
+}
 
-    // ── Gemini Analysis Engine ──
-    document.getElementById('analysis-engine-model').textContent =
-        engine ? `${engine.provider}:${engine.model}` : 'gemini';
-    document.getElementById('analysis-engine-status').textContent = engine && engine.enabled
-        ? '🟢 Live AI review is active for this analysis.'
-        : '🔴 AI engine is not active — showing heuristic-only results. Set GEMINI_API_KEY to enable.';
-    
-    const verdictEl = document.getElementById('analysis-engine-verdict');
-    verdictEl.textContent = engine ? engine.verdict : result.status;
-    verdictEl.style.color = statusColor(engine ? engine.verdict : result.status);
-    verdictEl.style.fontWeight = '600';
+function renderLiveChecks(live) {
+    // ── DNS ──
+    const dns = live.dns || {};
+    const dnsStatus = document.getElementById('dns-status');
+    const dnsDetail = document.getElementById('dns-detail');
+    if (dns.resolves === true) {
+        dnsStatus.textContent = 'RESOLVED';
+        dnsStatus.className = 'phish-live-status status-pass';
+        dnsDetail.innerHTML = `Domain resolves to <code>${(dns.ip_addresses || []).join(', ')}</code> (${dns.record_count} record${dns.record_count !== 1 ? 's' : ''})`;
+    } else if (dns.resolves === false) {
+        dnsStatus.textContent = 'FAILED';
+        dnsStatus.className = 'phish-live-status status-fail';
+        dnsDetail.textContent = dns.error || 'Domain does not resolve in DNS';
+    } else {
+        dnsStatus.textContent = 'ERROR';
+        dnsStatus.className = 'phish-live-status status-err';
+        dnsDetail.textContent = dns.error || 'DNS check could not be completed';
+    }
 
-    document.getElementById('analysis-engine-summary').textContent = engine
-        ? engine.summary
-        : 'AI analysis is disabled. Results are based on heuristic checks only.';
+    // ── SSL ──
+    const ssl = live.ssl || {};
+    const sslStatus = document.getElementById('ssl-status');
+    const sslDetail = document.getElementById('ssl-detail');
+    if (ssl.valid === true) {
+        sslStatus.textContent = 'VALID';
+        sslStatus.className = 'phish-live-status status-pass';
+        let sslInfo = `Issued by <code>${escapeHtml(ssl.issuer || 'Unknown')}</code>`;
+        if (ssl.days_until_expiry !== null && ssl.days_until_expiry !== undefined) {
+            sslInfo += ` · Expires in ${ssl.days_until_expiry} days`;
+        }
+        if (ssl.is_free_cert) {
+            sslInfo += ' · ⚠️ Free/automated CA';
+        }
+        if (ssl.cert_age_days !== null && ssl.cert_age_days !== undefined && ssl.cert_age_days < 30) {
+            sslInfo += ` · 🆕 Certificate only ${ssl.cert_age_days} days old`;
+        }
+        sslDetail.innerHTML = sslInfo;
+    } else if (ssl.valid === false) {
+        sslStatus.textContent = ssl.self_signed ? 'SELF-SIGNED' : 'INVALID';
+        sslStatus.className = 'phish-live-status status-fail';
+        sslDetail.textContent = ssl.error || 'SSL certificate verification failed';
+    } else {
+        sslStatus.textContent = 'N/A';
+        sslStatus.className = 'phish-live-status status-err';
+        sslDetail.textContent = ssl.error || 'SSL check not available';
+    }
 
-    const engineSignalsEl = document.getElementById('analysis-engine-signals');
-    engineSignalsEl.innerHTML = '';
-    ((engine && engine.signals) || []).forEach(signal => {
-        const li = document.createElement('li');
-        li.textContent = signal;
-        li.style.marginBottom = '8px';
-        engineSignalsEl.appendChild(li);
-    });
+    // ── HTTP ──
+    const http = live.http || {};
+    const httpStatus = document.getElementById('http-status');
+    const httpDetail = document.getElementById('http-detail');
+    if (http.reachable) {
+        const isOk = http.status_code >= 200 && http.status_code < 400;
+        httpStatus.textContent = `${http.status_code}`;
+        httpStatus.className = `phish-live-status ${isOk ? 'status-pass' : 'status-warn'}`;
+        let httpInfo = `Server: <code>${escapeHtml(http.server || 'Unknown')}</code>`;
+        if (http.redirect_count > 0) {
+            httpInfo += ` · ${http.redirect_count} redirect${http.redirect_count > 1 ? 's' : ''}`;
+        }
+        if (http.page_title) {
+            httpInfo += `<br>Title: "${escapeHtml(http.page_title.substring(0, 80))}"`;
+        }
+        if (http.final_domain && http.final_domain !== new URL(document.getElementById('phishing-target').value.includes('://') ? document.getElementById('phishing-target').value : 'https://' + document.getElementById('phishing-target').value).hostname) {
+            httpInfo += `<br>⚠️ Final domain: <code>${escapeHtml(http.final_domain)}</code>`;
+        }
+        httpDetail.innerHTML = httpInfo;
+    } else {
+        httpStatus.textContent = 'UNREACHABLE';
+        httpStatus.className = 'phish-live-status status-fail';
+        httpDetail.textContent = http.error || 'Could not reach the URL';
+    }
+
+    // ── WHOIS ──
+    const whois = live.whois || {};
+    const whoisStatus = document.getElementById('whois-status');
+    const whoisDetail = document.getElementById('whois-detail');
+    if (whois.available) {
+        if (whois.not_registered) {
+            whoisStatus.textContent = 'NOT FOUND';
+            whoisStatus.className = 'phish-live-status status-fail';
+            whoisDetail.textContent = 'Domain appears to not be registered';
+        } else if (whois.creation_date) {
+            const isNew = whois.is_very_new || whois.is_new;
+            whoisStatus.textContent = isNew ? 'NEW DOMAIN' : 'ESTABLISHED';
+            whoisStatus.className = `phish-live-status ${isNew ? 'status-warn' : 'status-pass'}`;
+            whoisDetail.innerHTML = `Registered: <code>${whois.creation_date}</code> · Age: ${whois.age_days} days${whois.is_very_new ? ' ⚠️ Very new!' : ''}`;
+        } else {
+            whoisStatus.textContent = 'LOOKUP OK';
+            whoisStatus.className = 'phish-live-status status-info';
+            whoisDetail.textContent = whois.note || 'WHOIS data retrieved but age not determined';
+        }
+    } else {
+        whoisStatus.textContent = 'UNAVAILABLE';
+        whoisStatus.className = 'phish-live-status status-err';
+        whoisDetail.textContent = whois.error || 'WHOIS lookup not available';
+    }
+
+    // ── Security Headers ──
+    const headersStatus = document.getElementById('headers-status');
+    const headersDetail = document.getElementById('headers-detail');
+    if (http.reachable) {
+        const present = http.security_headers_present || {};
+        const missing = http.security_headers_missing || [];
+        const presentCount = Object.keys(present).length;
+        const totalHeaders = presentCount + missing.length;
+
+        if (missing.length === 0) {
+            headersStatus.textContent = `${presentCount}/${totalHeaders}`;
+            headersStatus.className = 'phish-live-status status-pass';
+        } else if (missing.length <= 3) {
+            headersStatus.textContent = `${presentCount}/${totalHeaders}`;
+            headersStatus.className = 'phish-live-status status-warn';
+        } else {
+            headersStatus.textContent = `${presentCount}/${totalHeaders}`;
+            headersStatus.className = 'phish-live-status status-fail';
+        }
+
+        let headerInfo = '';
+        if (missing.length > 0) {
+            headerInfo = `Missing: ${missing.join(', ')}`;
+        } else {
+            headerInfo = 'All critical security headers present';
+        }
+        headersDetail.textContent = headerInfo;
+    } else {
+        headersStatus.textContent = 'N/A';
+        headersStatus.className = 'phish-live-status status-err';
+        headersDetail.textContent = 'Cannot check headers — site unreachable';
+    }
+
+    // ── Content Analysis ──
+    const contentStatus = document.getElementById('content-status');
+    const contentDetail = document.getElementById('content-detail');
+    if (http.reachable) {
+        const signals = http.content_signals || [];
+        if (signals.length === 0) {
+            contentStatus.textContent = 'CLEAN';
+            contentStatus.className = 'phish-live-status status-pass';
+            contentDetail.textContent = 'No credential harvesting or suspicious content patterns detected';
+        } else {
+            contentStatus.textContent = `${signals.length} SIGNAL${signals.length > 1 ? 'S' : ''}`;
+            contentStatus.className = 'phish-live-status status-fail';
+            contentDetail.innerHTML = signals.map(s => `• ${escapeHtml(s)}`).join('<br>');
+        }
+    } else {
+        contentStatus.textContent = 'N/A';
+        contentStatus.className = 'phish-live-status status-err';
+        contentDetail.textContent = 'Cannot analyze content — site unreachable';
+    }
+}
+
+function animateCounter(element, from, to, duration) {
+    const start = performance.now();
+    function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        const current = Math.round(from + (to - from) * eased);
+        element.textContent = current;
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
 }
 </script>
 {% endblock %}

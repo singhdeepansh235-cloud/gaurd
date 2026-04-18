@@ -11,7 +11,11 @@ from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
 
 from sentinal_fuzz.web.services.gemini_analysis import analyze_with_gemini
-from sentinal_fuzz.web.services.phishing_detection import detect_phishing
+from sentinal_fuzz.web.services.phishing_detection import (
+    detect_phishing,
+    run_live_checks,
+    extract_domain,
+)
 from sentinal_fuzz.web.services import db
 from sentinal_fuzz.web.services.scan_manager import scan_manager
 
@@ -44,30 +48,72 @@ class PhishingCheckRequest(BaseModel):
 
 
 async def analyze_url(url: str) -> dict[str, object]:
-    """Run comprehensive URL analysis and merge phishing signals into the response."""
+    """Run comprehensive URL analysis — heuristic + live checks + AI."""
+    # 1. Heuristic analysis (fast, synchronous)
     phishing = detect_phishing(url)
+    domain = extract_domain(url)
+
+    # 2. Live network checks (DNS, SSL, HTTP, WHOIS — parallel)
+    live = await run_live_checks(url, domain)
+
+    # 3. Merge live signals into the heuristic result
+    all_reasons = list(phishing.get("reasons", []))
+    all_reasons.extend(live.get("live_reasons", []))
+
+    # Recalculate combined score
+    heuristic_confidence = phishing.get("confidence", 0)
+    live_score = live.get("live_score", 0)
+
+    # Base risk from heuristic
+    if phishing["status"] == "Safe":
+        base_risk = 0
+    elif phishing["status"] == "Suspicious":
+        base_risk = max(heuristic_confidence, 25)
+    else:  # Likely Phishing
+        base_risk = max(heuristic_confidence, 55)
+
+    combined_risk = min(base_risk + live_score, 100)
+
+    # Re-evaluate status with live data
+    if combined_risk >= 55:
+        combined_status = "Likely Phishing"
+    elif combined_risk >= 25:
+        combined_status = "Suspicious"
+    else:
+        combined_status = phishing["status"]
+
+    # Confidence based on combined risk
+    if combined_status == "Safe":
+        combined_confidence = max(5, 100 - int(combined_risk * 3))
+    else:
+        combined_confidence = min(100, int(combined_risk * 1.2) + 15)
+
+    # Update phishing result with merged data
+    phishing["status"] = combined_status
+    phishing["confidence"] = combined_confidence
+    phishing["reasons"] = all_reasons
+
+    # 4. AI analysis (Gemini)
     ai_analysis = await analyze_with_gemini(url, phishing)
 
-    # Base risk from heuristic confidence
-    risk_score = phishing.get("confidence", 0)
-    if phishing["status"] == "Safe":
-        risk_score = 0
-    elif phishing["status"] == "Suspicious":
-        risk_score = max(risk_score, 25)
-    elif phishing["status"] == "Likely Phishing":
-        risk_score = max(risk_score, 55)
-
-    # Boost from AI analysis
+    # Final risk score adjustment from AI
     if ai_analysis.get("enabled"):
         if ai_analysis["verdict"] == "Suspicious":
-            risk_score = max(risk_score, risk_score + 10)
+            combined_risk = max(combined_risk, combined_risk + 10)
         elif ai_analysis["verdict"] == "Likely Phishing":
-            risk_score = max(risk_score, risk_score + 20)
+            combined_risk = max(combined_risk, combined_risk + 20)
+        combined_risk = min(combined_risk, 100)
 
     return {
-        "risk_score": min(risk_score, 100),
+        "risk_score": combined_risk,
         "phishing": phishing,
         "analysis_engine": ai_analysis,
+        "live_checks": {
+            "dns": live.get("dns", {}),
+            "ssl": live.get("ssl", {}),
+            "http": live.get("http", {}),
+            "whois": live.get("whois", {}),
+        },
     }
 
 

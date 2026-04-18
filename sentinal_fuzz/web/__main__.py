@@ -3,6 +3,12 @@
 import uvicorn
 import argparse
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # loads .env from project root
+except ImportError:
+    pass  # python-dotenv not installed; rely on system env vars
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Sentinal-Fuzz Web Interface")

@@ -9,14 +9,31 @@ Performs multi-layer heuristic analysis:
   6. URL structure anomalies (length, subdomain depth, encoded chars)
   7. Punycode / IDN homograph detection
   8. URL shortener detection
+
+Live checks (network-based):
+  9.  DNS resolution verification
+  10. SSL certificate validation & analysis
+  11. HTTP response & redirect chain analysis
+  12. Page content scanning (credential harvesting detection)
+  13. Security headers audit
+  14. Domain age estimation (WHOIS)
 """
 
 from __future__ import annotations
 
 import re
+import ssl
 import math
+import socket
+import asyncio
+import logging
+from datetime import datetime, timezone
 from difflib import SequenceMatcher
 from urllib.parse import urlparse, unquote
+
+import httpx
+
+logger = logging.getLogger(__name__)
 
 
 # ── Trusted brand domains (exact hostnames that should NEVER be flagged) ──
@@ -108,6 +125,33 @@ HOMOGLYPH_MAP: dict[str, str] = {
     "у": "y", "х": "x",
 }
 
+# ── Security headers we expect on legitimate sites ──
+
+SECURITY_HEADERS: dict[str, str] = {
+    "strict-transport-security": "HSTS",
+    "content-security-policy": "CSP",
+    "x-frame-options": "X-Frame-Options",
+    "x-content-type-options": "X-Content-Type-Options",
+    "x-xss-protection": "XSS Protection",
+    "referrer-policy": "Referrer Policy",
+    "permissions-policy": "Permissions Policy",
+}
+
+# ── Suspicious page content patterns ──
+
+CREDENTIAL_HARVEST_PATTERNS: list[tuple[str, str]] = [
+    (r'<input[^>]*type=["\']password["\']', "Password input field detected"),
+    (r'<form[^>]*action=["\'](?!https?://(?:www\.)?(?:' + "|".join(
+        re.escape(d) for d in list(_LEGITIMATE_HOSTNAMES)[:20]
+    ) + r'))', "Form submits to external/unknown domain"),
+    (r'<input[^>]*(?:name|id)=["\'](?:ssn|social|cardnumber|cvv|ccnum|credit)', "Sensitive data field (SSN/CC) detected"),
+    (r'<input[^>]*(?:name|id)=["\'](?:user|email|login|usr|uname)', "Username/email input field detected"),
+    (r'(?:document\.cookie|localStorage|sessionStorage)', "JavaScript accessing browser storage"),
+    (r'(?:atob|btoa|eval|Function\()', "Obfuscated JavaScript detected"),
+    (r'<meta[^>]*http-equiv=["\']refresh["\']', "Auto-redirect via meta refresh"),
+    (r'(?:keylog|keystroke|onkeypress|onkeydown)[^>]*=', "Potential keystroke logging"),
+]
+
 
 # ── Core functions ──────────────────────────────────────────────────
 
@@ -162,6 +206,328 @@ def _is_ip_address(hostname: str) -> bool:
     if hostname.startswith("[") or ":" in hostname:
         return True
     return False
+
+
+# ── Live network checks ────────────────────────────────────────────
+
+
+async def check_dns_resolution(domain: str) -> dict:
+    """Verify the domain resolves in DNS."""
+    try:
+        loop = asyncio.get_event_loop()
+        result = await loop.run_in_executor(
+            None, lambda: socket.getaddrinfo(domain, None, socket.AF_UNSPEC)
+        )
+        ips = list(set(r[4][0] for r in result))
+        return {
+            "resolves": True,
+            "ip_addresses": ips[:5],
+            "record_count": len(ips),
+        }
+    except socket.gaierror:
+        return {
+            "resolves": False,
+            "ip_addresses": [],
+            "record_count": 0,
+            "error": "Domain does not resolve — DNS lookup failed",
+        }
+    except Exception as e:
+        return {
+            "resolves": None,
+            "ip_addresses": [],
+            "error": str(e),
+        }
+
+
+async def check_ssl_certificate(domain: str) -> dict:
+    """Validate and analyze the SSL certificate."""
+    try:
+        loop = asyncio.get_event_loop()
+
+        def _get_cert():
+            ctx = ssl.create_default_context()
+            with ctx.wrap_socket(socket.socket(), server_hostname=domain) as s:
+                s.settimeout(8)
+                s.connect((domain, 443))
+                cert = s.getpeercert()
+                return cert
+
+        cert = await loop.run_in_executor(None, _get_cert)
+
+        # Parse certificate details
+        subject = dict(x[0] for x in cert.get("subject", ()))
+        issuer = dict(x[0] for x in cert.get("issuer", ()))
+        not_after = cert.get("notAfter", "")
+        not_before = cert.get("notBefore", "")
+        san = [entry[1] for entry in cert.get("subjectAltName", ())]
+
+        # Parse expiry
+        try:
+            expiry = datetime.strptime(not_after, "%b %d %H:%M:%S %Y %Z")
+            days_until_expiry = (expiry - datetime.now()).days
+        except Exception:
+            days_until_expiry = None
+
+        # Parse issue date
+        try:
+            issued = datetime.strptime(not_before, "%b %d %H:%M:%S %Y %Z")
+            cert_age_days = (datetime.now() - issued).days
+        except Exception:
+            cert_age_days = None
+
+        # Check for free/automated CAs (often used by phishing)
+        issuer_org = issuer.get("organizationName", "").lower()
+        is_free_cert = any(
+            ca in issuer_org
+            for ca in ["let's encrypt", "letsencrypt", "zerossl", "buypass", "ssl.com free"]
+        )
+
+        return {
+            "valid": True,
+            "subject": subject.get("commonName", ""),
+            "issuer": issuer.get("organizationName", "Unknown"),
+            "issuer_cn": issuer.get("commonName", ""),
+            "not_before": not_before,
+            "not_after": not_after,
+            "days_until_expiry": days_until_expiry,
+            "cert_age_days": cert_age_days,
+            "san_count": len(san),
+            "san_domains": san[:8],
+            "is_free_cert": is_free_cert,
+            "is_wildcard": any("*" in s for s in san),
+        }
+    except ssl.SSLCertVerificationError as e:
+        return {
+            "valid": False,
+            "error": f"SSL certificate verification failed: {e.verify_message}",
+            "self_signed": "self-signed" in str(e).lower() or "self signed" in str(e).lower(),
+        }
+    except (ConnectionRefusedError, socket.timeout, OSError):
+        return {
+            "valid": None,
+            "error": "Could not connect to port 443 — SSL not available",
+        }
+    except Exception as e:
+        return {
+            "valid": None,
+            "error": f"SSL check error: {str(e)}",
+        }
+
+
+async def check_http_response(url: str) -> dict:
+    """Analyze HTTP response, redirects, and headers."""
+    try:
+        async with httpx.AsyncClient(
+            timeout=10.0,
+            follow_redirects=True,
+            max_redirects=10,
+            verify=False,  # We check SSL separately
+        ) as client:
+            response = await client.get(url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            })
+
+            # Track redirect chain
+            redirect_chain = []
+            for r in response.history:
+                redirect_chain.append({
+                    "url": str(r.url),
+                    "status": r.status_code,
+                })
+
+            # Final destination
+            final_url = str(response.url)
+            final_domain = urlparse(final_url).hostname or ""
+
+            # Analyze response headers
+            headers = dict(response.headers)
+            content_type = headers.get("content-type", "")
+
+            # Check security headers
+            security_headers_present = {}
+            security_headers_missing = []
+            for header_key, header_name in SECURITY_HEADERS.items():
+                if header_key in headers:
+                    security_headers_present[header_name] = headers[header_key][:120]
+                else:
+                    security_headers_missing.append(header_name)
+
+            # Page content analysis
+            content = response.text[:50000] if response.status_code == 200 else ""
+            content_signals = []
+
+            if content:
+                for pattern, description in CREDENTIAL_HARVEST_PATTERNS:
+                    try:
+                        if re.search(pattern, content, re.IGNORECASE):
+                            content_signals.append(description)
+                    except re.error:
+                        pass
+
+                # Check for suspicious page title
+                title_match = re.search(r"<title[^>]*>(.*?)</title>", content, re.IGNORECASE | re.DOTALL)
+                page_title = title_match.group(1).strip() if title_match else ""
+
+                # Check for iframe abuse
+                iframe_count = len(re.findall(r"<iframe", content, re.IGNORECASE))
+                if iframe_count > 2:
+                    content_signals.append(f"Multiple iframes detected ({iframe_count}) — possible clickjacking")
+
+                # Check for data exfiltration patterns
+                if re.search(r"(?:fetch|XMLHttpRequest|ajax)\s*\([^)]*(?:\.xyz|\.tk|\.ml|\.top)", content, re.IGNORECASE):
+                    content_signals.append("JavaScript sends data to suspicious domain")
+
+                # Hidden form fields
+                hidden_fields = len(re.findall(r'<input[^>]*type=["\']hidden["\']', content, re.IGNORECASE))
+                if hidden_fields > 5:
+                    content_signals.append(f"Excessive hidden form fields ({hidden_fields})")
+
+                # Brand impersonation in page content
+                brand_mentions = []
+                for brand in BRAND_LABELS:
+                    if brand.lower() in content.lower() and brand.lower() not in final_domain.lower():
+                        brand_mentions.append(brand)
+                if brand_mentions:
+                    content_signals.append(f"Page content mentions brands not matching domain: {', '.join(brand_mentions[:3])}")
+
+            else:
+                page_title = ""
+
+            return {
+                "reachable": True,
+                "status_code": response.status_code,
+                "final_url": final_url,
+                "final_domain": final_domain,
+                "redirect_count": len(redirect_chain),
+                "redirect_chain": redirect_chain,
+                "content_type": content_type,
+                "page_title": page_title[:200],
+                "server": headers.get("server", "Unknown")[:80],
+                "security_headers_present": security_headers_present,
+                "security_headers_missing": security_headers_missing,
+                "content_signals": content_signals,
+                "content_length": len(content),
+                "has_login_form": any("password" in s.lower() or "username" in s.lower() for s in content_signals),
+            }
+    except httpx.TooManyRedirects:
+        return {
+            "reachable": False,
+            "error": "Too many redirects (>10) — likely redirect loop",
+            "redirect_count": 10,
+            "content_signals": ["Excessive redirect chain — possible evasion technique"],
+        }
+    except httpx.ConnectTimeout:
+        return {
+            "reachable": False,
+            "error": "Connection timed out",
+            "content_signals": [],
+        }
+    except Exception as e:
+        return {
+            "reachable": False,
+            "error": f"HTTP request failed: {str(e)[:200]}",
+            "content_signals": [],
+        }
+
+
+async def check_domain_age(domain: str) -> dict:
+    """Estimate domain age via WHOIS (best-effort, no external lib required)."""
+    try:
+        loop = asyncio.get_event_loop()
+
+        def _whois_query():
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(8)
+            # Determine the WHOIS server
+            tld = domain.rsplit(".", 1)[-1] if "." in domain else ""
+            whois_servers = {
+                "com": "whois.verisign-grs.com",
+                "net": "whois.verisign-grs.com",
+                "org": "whois.pir.org",
+                "io": "whois.nic.io",
+                "xyz": "whois.nic.xyz",
+                "info": "whois.afilias.net",
+                "co": "whois.nic.co",
+            }
+            server = whois_servers.get(tld, f"whois.nic.{tld}")
+
+            try:
+                s.connect((server, 43))
+                s.send(f"{domain}\r\n".encode())
+                data = b""
+                while True:
+                    chunk = s.recv(4096)
+                    if not chunk:
+                        break
+                    data += chunk
+                return data.decode("utf-8", errors="ignore")
+            finally:
+                s.close()
+
+        whois_text = await loop.run_in_executor(None, _whois_query)
+
+        # Parse creation date from WHOIS
+        creation_patterns = [
+            r"Creation Date:\s*(.+)",
+            r"Created:\s*(.+)",
+            r"created:\s*(.+)",
+            r"Registration Date:\s*(.+)",
+            r"Registered:\s*(.+)",
+            r"Domain Registration Date:\s*(.+)",
+        ]
+
+        creation_date = None
+        for pattern in creation_patterns:
+            match = re.search(pattern, whois_text, re.IGNORECASE)
+            if match:
+                date_str = match.group(1).strip()
+                # Try common date formats
+                for fmt in [
+                    "%Y-%m-%dT%H:%M:%SZ",
+                    "%Y-%m-%dT%H:%M:%S%z",
+                    "%Y-%m-%d %H:%M:%S",
+                    "%Y-%m-%d",
+                    "%d-%b-%Y",
+                    "%d/%m/%Y",
+                ]:
+                    try:
+                        creation_date = datetime.strptime(date_str[:19], fmt[:len(date_str)])
+                        break
+                    except ValueError:
+                        continue
+                if creation_date:
+                    break
+
+        if creation_date:
+            age_days = (datetime.now() - creation_date).days
+            return {
+                "available": True,
+                "creation_date": creation_date.strftime("%Y-%m-%d"),
+                "age_days": age_days,
+                "is_new": age_days < 90,
+                "is_very_new": age_days < 30,
+            }
+        else:
+            # Check if domain is available / not registered
+            if "No match" in whois_text or "NOT FOUND" in whois_text.upper() or "No Data Found" in whois_text:
+                return {
+                    "available": True,
+                    "creation_date": None,
+                    "age_days": None,
+                    "not_registered": True,
+                    "note": "Domain appears to not be registered",
+                }
+            return {
+                "available": True,
+                "creation_date": None,
+                "age_days": None,
+                "note": "WHOIS data found but creation date not parseable",
+            }
+    except Exception as e:
+        return {
+            "available": False,
+            "error": f"WHOIS lookup failed: {str(e)[:150]}",
+        }
 
 
 # ── Main detection function ─────────────────────────────────────────
@@ -419,4 +785,105 @@ def detect_phishing(url: str) -> dict[str, object]:
         "matched_domain": matched_domain,
         "reasons": reasons,
         "checks": checks,
+    }
+
+
+async def run_live_checks(url: str, domain: str) -> dict:
+    """Run all live network-based checks in parallel."""
+    parts = extract_full_url_parts(url)
+    full_url = parts["full"]
+
+    # Run DNS, SSL, HTTP, and WHOIS in parallel
+    dns_task = check_dns_resolution(domain)
+    ssl_task = check_ssl_certificate(domain)
+    http_task = check_http_response(full_url)
+    whois_task = check_domain_age(domain)
+
+    dns_result, ssl_result, http_result, whois_result = await asyncio.gather(
+        dns_task, ssl_task, http_task, whois_task,
+        return_exceptions=True,
+    )
+
+    # Handle exceptions gracefully
+    if isinstance(dns_result, Exception):
+        dns_result = {"resolves": None, "error": str(dns_result)}
+    if isinstance(ssl_result, Exception):
+        ssl_result = {"valid": None, "error": str(ssl_result)}
+    if isinstance(http_result, Exception):
+        http_result = {"reachable": False, "error": str(http_result), "content_signals": []}
+    if isinstance(whois_result, Exception):
+        whois_result = {"available": False, "error": str(whois_result)}
+
+    # ── Score adjustments from live checks ──
+    live_reasons: list[str] = []
+    live_score: float = 0.0
+
+    # DNS
+    if dns_result.get("resolves") is False:
+        live_reasons.append("Domain does not resolve in DNS — this domain may not exist or is parked.")
+        live_score += 15
+
+    # SSL
+    if ssl_result.get("valid") is False:
+        if ssl_result.get("self_signed"):
+            live_reasons.append("SSL certificate is self-signed — legitimate sites use trusted CAs.")
+            live_score += 20
+        else:
+            live_reasons.append(f"SSL certificate invalid: {ssl_result.get('error', 'unknown error')}")
+            live_score += 15
+    elif ssl_result.get("valid") is True:
+        if ssl_result.get("cert_age_days") is not None and ssl_result["cert_age_days"] < 14:
+            live_reasons.append(f"SSL certificate was issued only {ssl_result['cert_age_days']} days ago — very new certificate.")
+            live_score += 8
+        if ssl_result.get("is_free_cert"):
+            live_reasons.append("Uses a free automated SSL certificate (common with phishing sites).")
+            live_score += 5
+
+    # HTTP
+    if http_result.get("reachable"):
+        if http_result.get("redirect_count", 0) > 3:
+            live_reasons.append(f"Excessive redirect chain ({http_result['redirect_count']} redirects) — possible evasion.")
+            live_score += 10
+
+        # Security headers
+        missing = http_result.get("security_headers_missing", [])
+        if len(missing) >= 5:
+            live_reasons.append(f"Missing {len(missing)} critical security headers — poor security configuration.")
+            live_score += 8
+
+        # Content signals
+        content_signals = http_result.get("content_signals", [])
+        if content_signals:
+            for signal in content_signals[:4]:
+                live_reasons.append(f"Content analysis: {signal}")
+            live_score += min(10 * len(content_signals), 30)
+
+        if http_result.get("has_login_form"):
+            live_reasons.append("Page contains a login/credential form — high risk if combined with brand impersonation.")
+            live_score += 15
+    else:
+        err = http_result.get("error", "")
+        if "Too many redirects" in err:
+            live_reasons.append("Too many redirects detected — likely redirect loop or evasion technique.")
+            live_score += 10
+
+    # WHOIS / Domain age
+    if whois_result.get("available"):
+        if whois_result.get("not_registered"):
+            live_reasons.append("Domain appears to not be registered — URL may be fraudulent.")
+            live_score += 20
+        elif whois_result.get("is_very_new"):
+            live_reasons.append(f"Domain was registered only {whois_result['age_days']} days ago — newly registered domains are high-risk.")
+            live_score += 15
+        elif whois_result.get("is_new"):
+            live_reasons.append(f"Domain was registered {whois_result['age_days']} days ago — relatively new domain.")
+            live_score += 8
+
+    return {
+        "dns": dns_result,
+        "ssl": ssl_result,
+        "http": http_result,
+        "whois": whois_result,
+        "live_reasons": live_reasons,
+        "live_score": min(live_score, 50),  # Cap live score contribution
     }
