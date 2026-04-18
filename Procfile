@@ -1,2 +1,2 @@
-web: python -m sentinal_fuzz.web --host 0.0.0.0
+web: ./start.sh
 testserver: python test_server.py --host 0.0.0.0
