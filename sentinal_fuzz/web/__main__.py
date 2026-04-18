@@ -12,7 +12,7 @@ except ImportError:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Sentinal-Fuzz Web Interface")
-    parser.add_argument("--host", default="127.0.0.1", help="Host to bind to")
+    parser.add_argument("--host", default="::", help="Host to bind to")
     parser.add_argument("--port", type=int, default=8080, help="Port to listen on")
     parser.add_argument("--reload", action="store_true", help="Enable auto-reload")
     args = parser.parse_args()
