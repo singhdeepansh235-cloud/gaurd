@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Sentinel-Fuzz Phishing Detector",
+  "version": "1.0",
+  "description": "Detect phishing websites in real-time using Sentinel-Fuzz backend.",
+  "permissions": ["activeTab", "scripting", "webNavigation"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

@@ -47,7 +47,7 @@ class PhishingCheckRequest(BaseModel):
     target: str
 
 
-async def analyze_url(url: str) -> dict[str, object]:
+async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, object]:
     """Run comprehensive URL analysis — heuristic + live checks + AI."""
     # 1. Heuristic analysis (fast, synchronous)
     phishing = detect_phishing(url)
@@ -94,7 +94,14 @@ async def analyze_url(url: str) -> dict[str, object]:
     phishing["reasons"] = all_reasons
 
     # 4. AI analysis (Gemini)
-    ai_analysis = await analyze_with_gemini(url, phishing)
+    if skip_ai:
+        ai_analysis = {
+            "enabled": False, 
+            "summary": "AI bypassed for standard heuristic checks to preserve quota.",
+            "verdict": phishing["status"]
+        }
+    else:
+        ai_analysis = await analyze_with_gemini(url, phishing, live)
 
     # Final risk score adjustment from AI
     if ai_analysis.get("enabled"):
@@ -260,4 +267,13 @@ async def update_settings(update: SettingsUpdate):
 @router.post("/phishing-check")
 async def phishing_check(req: PhishingCheckRequest):
     """Analyze a URL or domain for phishing indicators."""
-    return JSONResponse(await analyze_url(req.target))
+    return JSONResponse(await analyze_url(req.target, skip_ai=True))
+
+
+@router.post("/gemini-report")
+async def gemini_report(req: PhishingCheckRequest):
+    """Analyze a URL or domain strictly for the Gemini AI report."""
+    results = await analyze_url(req.target, skip_ai=False)
+    ai_engine = results.get("analysis_engine", {})
+    return JSONResponse(ai_engine)
+
