@@ -135,10 +135,7 @@ class FalsePositiveFilter:
                 all_in_baseline = False
                 break
 
-        if all_in_baseline and evidence_parts:
-            return False  # All evidence was already in baseline → reject
-
-        return True
+        return not (all_in_baseline and evidence_parts)
 
     @staticmethod
     def _rule_response_differential(
@@ -156,10 +153,7 @@ class FalsePositiveFilter:
             return True  # Different status → something happened
 
         body_diff = abs(len(fuzzed.text) - len(baseline.text))
-        if body_diff < 50 and fuzzed.text.strip() == baseline.text.strip():
-            return False  # Nearly identical → reject
-
-        return True
+        return not (body_diff < 50 and fuzzed.text.strip() == baseline.text.strip())
 
     @staticmethod
     def _rule_xss_unescaped(
@@ -198,11 +192,7 @@ class FalsePositiveFilter:
             .replace('"', "&quot;")
             .replace("'", "&#x27;")
         )
-        if escaped_payload in body:
-            return False  # Escaped → safe → reject
-
-        # Payload not found at all (in any form) → edge case, keep for review
-        return True
+        return escaped_payload not in body
 
     @staticmethod
     def _rule_timing_significance(
@@ -263,12 +253,12 @@ def verify_xss_unescaped(response_html: str, nonce: str) -> bool:
     parser = _XSSVerifierParser(nonce)
     try:
         parser.feed(response_html)
-    except _FoundInScript:
+    except _FoundInScriptError:
         return True
     return False
 
 
-class _FoundInScript(Exception):
+class _FoundInScriptError(Exception):
     """Sentinel exception raised when nonce is found in a <script> tag."""
 
 
@@ -286,9 +276,8 @@ class _XSSVerifierParser(HTMLParser):
             # Also check the attributes (e.g. onerror, onload carry JS too)
         # Check event handler attributes for the nonce
         for attr_name, attr_value in attrs:
-            if attr_value and self.nonce in attr_value:
-                if attr_name.lower().startswith("on"):
-                    raise _FoundInScript()
+            if attr_value and self.nonce in attr_value and attr_name.lower().startswith("on"):
+                raise _FoundInScriptError()
 
     def handle_endtag(self, tag: str) -> None:
         if tag.lower() == "script":
@@ -296,4 +285,4 @@ class _XSSVerifierParser(HTMLParser):
 
     def handle_data(self, data: str) -> None:
         if self._in_script and self.nonce in data:
-            raise _FoundInScript()
+            raise _FoundInScriptError()

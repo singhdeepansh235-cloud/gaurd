@@ -135,7 +135,7 @@ async def create_scan(req: ScanRequest) -> Any:
     try:
         state = await scan_manager.start_scan(config)
     except Exception as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return {
         "scan_id": state.scan_id,

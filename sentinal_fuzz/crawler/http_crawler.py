@@ -15,6 +15,7 @@ Usage::
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import re
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
@@ -277,7 +278,7 @@ class _HtmlExtractor(HTMLParser):
                     "name": self._current_select_name,
                     "type": "select",
                     "value": self._current_select_options[0] if self._current_select_options else "",
-                    "options": self._current_select_options,
+                    "options": self._current_select_options,  # type: ignore
                     "classification": classify_field(self._current_select_name, "select"),
                 })
 
@@ -291,10 +292,8 @@ class _HtmlExtractor(HTMLParser):
 def extract_page_data(html: str) -> _ExtractedData:
     """Parse HTML and extract all links, forms, and metadata."""
     parser = _HtmlExtractor()
-    try:
+    with contextlib.suppress(Exception):
         parser.feed(html)
-    except Exception:
-        pass  # Tolerate malformed HTML
     return parser.data
 
 

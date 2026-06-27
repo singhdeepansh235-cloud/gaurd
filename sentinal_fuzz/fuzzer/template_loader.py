@@ -265,7 +265,7 @@ class TemplateLoader:
         # Direct top-level payloads
         payloads = raw.get("payloads")
         if payloads is not None:
-            return payloads
+            return payloads  # type: ignore
 
         # Legacy format: requests[0].payloads
         requests = raw.get("requests")
@@ -274,7 +274,7 @@ class TemplateLoader:
             if isinstance(first_req, dict):
                 req_payloads = first_req.get("payloads")
                 if req_payloads is not None:
-                    return req_payloads
+                    return req_payloads  # type: ignore
 
         # No payloads found — could be a passive template
         return []

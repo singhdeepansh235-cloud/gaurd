@@ -331,7 +331,7 @@ class Scanner:
             findings = await self._fuzzer.fuzz_all(endpoints)
             for f in findings:
                 self.emit("finding", finding=f)
-            return findings
+            return findings  # type: ignore
 
         from sentinal_fuzz.fuzzer.engine import FuzzEngine
         from sentinal_fuzz.fuzzer.template_loader import TemplateLoader

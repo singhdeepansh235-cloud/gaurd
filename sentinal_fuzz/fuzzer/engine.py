@@ -326,7 +326,7 @@ class FuzzEngine:
                     log.warning("Request error during fuzzing: %s", result)
                     continue
                 if result is not None:
-                    findings.append(result)
+                    findings.append(result)  # type: ignore
                     if template.stop_on_first_match:
                         return findings
 

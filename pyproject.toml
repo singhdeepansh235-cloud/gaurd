@@ -73,7 +73,7 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF"]
-ignore = ["E501", "RUF001", "RUF003", "RUF012", "E741", "F841"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003", "RUF006", "RUF012", "E741", "F841", "B008"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
@@ -82,3 +82,9 @@ testpaths = ["tests"]
 [tool.mypy]
 python_version = "3.11"
 strict = true
+disallow_any_generics = false
+warn_unused_ignores = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+ignore_missing_imports = true

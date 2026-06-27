@@ -384,7 +384,7 @@ def scan(
         raise
     except KeyboardInterrupt:
         display_info("Scan interrupted by user.")
-        raise typer.Exit(code=130)
+        raise typer.Exit(code=130) from None
     except Exception as exc:
         display_error(
             f"Scan failed: {exc}",
@@ -494,7 +494,7 @@ def crawl(
         raise
     except KeyboardInterrupt:
         display_info("Crawl interrupted by user.")
-        raise typer.Exit(code=130)
+        raise typer.Exit(code=130) from None
     except Exception as exc:
         display_error(
             f"Crawl failed: {exc}",
@@ -809,7 +809,7 @@ def _generate_html_report(
             "Jinja2 is required for HTML report generation.",
             hint="Install it with: pip install jinja2",
         )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     findings = scan_data.get("findings", [])
     summary = scan_data.get("summary", {})
@@ -998,7 +998,7 @@ def _generate_sarif_report(
 
         if rule_id not in rules_seen:
             rules_seen.add(rule_id)
-            run["tool"]["driver"]["rules"].append(  # type: ignore[union-attr]
+            run["tool"]["driver"]["rules"].append(  # type: ignore[union-attr, index]
                 {
                     "id": rule_id,
                     "shortDescription": {"text": finding.get("title", "")},
@@ -1013,7 +1013,7 @@ def _generate_sarif_report(
             "info": "note",
         }
 
-        run["results"].append(  # type: ignore[union-attr]
+        run["results"].append(  # type: ignore[union-attr, index]
             {
                 "ruleId": rule_id,
                 "level": sev_map.get(finding.get("severity", "info"), "note"),

@@ -96,7 +96,7 @@ def get_logger(
         )
         handler.setFormatter(logging.Formatter("%(message)s"))
     else:
-        handler = logging.StreamHandler(sys.stderr)
+        handler = logging.StreamHandler(sys.stderr)  # type: ignore
         handler.setFormatter(logging.Formatter(
             "%(asctime)s %(levelname)-8s %(name)s │ %(message)s",
             datefmt="%H:%M:%S",

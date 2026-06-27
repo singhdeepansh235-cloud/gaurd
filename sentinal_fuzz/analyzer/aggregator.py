@@ -104,7 +104,7 @@ def aggregate(
     """
     if not findings:
         return AnalysisReport(
-            scan_coverage=0.0 if total_endpoints == 0 else 0.0,
+            scan_coverage=0.0,
         )
 
     report = AnalysisReport()

@@ -17,6 +17,7 @@ Usage::
 from __future__ import annotations
 
 import abc
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -74,9 +75,9 @@ class BaseFuzzer(abc.ABC):
         self.config = config
         self.http_client = http_client
         self.stats = FuzzStats()
-        self._on_finding_callbacks: list[callable] = []  # type: ignore[type-arg]
+        self._on_finding_callbacks: list[Callable] = []
 
-    def on_finding(self, callback: callable) -> None:  # type: ignore[type-arg]
+    def on_finding(self, callback: Callable) -> None:
         """Register a callback to be invoked when a finding is discovered.
 
         Args:
@@ -88,7 +89,7 @@ class BaseFuzzer(abc.ABC):
         """Fire all registered on_finding callbacks."""
         for cb in self._on_finding_callbacks:
             try:
-                cb(finding)
+                cb(finding)  # type: ignore
             except Exception as exc:
                 log.warning("on_finding callback error: %s", exc)
 

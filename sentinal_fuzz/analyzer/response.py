@@ -202,10 +202,8 @@ for _category, _patterns in ERROR_SIGNATURES.items():
     if _category == "info_leak":
         continue  # Handled separately
     for _pat in _patterns:
-        try:
+        with contextlib.suppress(re.error):
             _DB_ERROR_PATTERNS.append(re.compile(_pat, re.IGNORECASE))
-        except re.error:
-            pass  # Skip invalid regexes at import time
 
 _INFO_LEAK_PATTERNS: list[re.Pattern[str]] = []
 for _pat in ERROR_SIGNATURES.get("info_leak", []):
@@ -276,13 +274,13 @@ class ResponseAnalyzer:
         if match_type == "word":
             return self._match_words(
                 fuzzed_body,
-                [str(w) for w in matcher.get("words", [])],
+                [str(w) for w in matcher.get("words", [])],  # type: ignore
                 condition,
             )
         elif match_type == "regex":
             return self._match_regex(
                 fuzzed_body,
-                [str(p) for p in matcher.get("regex", matcher.get("patterns", []))],
+                [str(p) for p in matcher.get("regex", matcher.get("patterns", []))],  # type: ignore
                 condition,
             )
         elif match_type == "diff":

@@ -1,5 +1,7 @@
 """Sentinal-Fuzz — Intelligent DAST Scanner."""
 
+from typing import Any
+
 __version__ = "0.1.0"
 
 __all__ = [

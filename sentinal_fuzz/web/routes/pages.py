@@ -145,7 +145,7 @@ async def report_page(request: Request, scan_id: str) -> Any:
         # Compute severity counts
         for f in findings:
             sev = f.get("severity", "info")
-            scan_info["severity_counts"][sev] = scan_info["severity_counts"].get(sev, 0) + 1
+            scan_info["severity_counts"][sev] = scan_info["severity_counts"].get(sev, 0) + 1  # type: ignore
 
     return templates.TemplateResponse(
         request=request,

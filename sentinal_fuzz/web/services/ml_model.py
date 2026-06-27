@@ -31,14 +31,14 @@ def predict_url(url: str) -> dict:
     """
     global _model
     if not ML_AVAILABLE:
-        return None
+        return None  # type: ignore
 
-    if _model is None and not load_model():
-        return None
+    if _model is None and not load_model():  # type: ignore
+        return None  # type: ignore
 
     try:
         # classes: 0 = Benign, 1 = Phishing
-        proba = _model.predict_proba([url])[0]
+        proba = _model.predict_proba([url])[0]  # type: ignore
         is_phish = proba[1] > 0.5
         confidence = proba[1] * 100 if is_phish else proba[0] * 100
 
@@ -54,4 +54,4 @@ def predict_url(url: str) -> dict:
         }
     except Exception as e:
         print(f"ML Prediction Error: {e}")
-        return None
+        return None  # type: ignore

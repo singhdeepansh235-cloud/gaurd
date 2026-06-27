@@ -158,7 +158,7 @@ class ScanManager:
                 api_count += 1
                 state.apis_found = api_count
             state.current_url = url
-            asyncio.ensure_future(self._broadcast(scan_id, "url_found", {
+            _ = asyncio.ensure_future(self._broadcast(scan_id, "url_found", {
                 "url": url,
                 "urls_found": state.urls_found,
                 "apis_found": state.apis_found,
@@ -170,7 +170,7 @@ class ScanManager:
                 state.forms_found = sum(
                     len(getattr(ep, "forms", [])) for ep in endpoints if hasattr(ep, "forms")
                 )
-                asyncio.ensure_future(self._broadcast(scan_id, "crawl_complete", {
+                _ = asyncio.ensure_future(self._broadcast(scan_id, "crawl_complete", {
                     "endpoints_total": state.endpoints_total,
                     "forms_found": state.forms_found,
                     "urls_found": state.urls_found,
@@ -184,7 +184,7 @@ class ScanManager:
                 state.findings_count += 1
                 sev = finding.severity.value
                 state.severity_counts[sev] = state.severity_counts.get(sev, 0) + 1
-                asyncio.ensure_future(self._broadcast(scan_id, "finding", {
+                _ = asyncio.ensure_future(self._broadcast(scan_id, "finding", {
                     "finding": finding_dict,
                     "findings_count": state.findings_count,
                     "severity_counts": state.severity_counts,
@@ -192,7 +192,7 @@ class ScanManager:
 
         def on_stage_changed(stage: str = "", **_kw: object) -> None:
             state.stage = stage
-            asyncio.ensure_future(self._broadcast(scan_id, "stage_changed", {
+            _ = asyncio.ensure_future(self._broadcast(scan_id, "stage_changed", {
                 "stage": stage,
             }))
 

@@ -18,6 +18,7 @@ Usage::
 
 from __future__ import annotations
 
+import contextlib
 import os
 from pathlib import Path
 from typing import Any
@@ -90,10 +91,8 @@ def _collect_env_vars() -> dict[str, Any]:
 
         # Type coercion
         if field_name in _INT_FIELDS:
-            try:
+            with contextlib.suppress(ValueError):
                 env_config[field_name] = int(value)
-            except ValueError:
-                pass  # skip invalid int env vars silently
         elif field_name in _BOOL_FIELDS:
             env_config[field_name] = value.lower() in ("1", "true", "yes")
         else:

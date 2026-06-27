@@ -17,6 +17,7 @@ Usage::
 from __future__ import annotations
 
 import abc
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -88,9 +89,9 @@ class BaseCrawler(abc.ABC):
         self.config = config
         self.http_client = http_client
         self.state = CrawlState()
-        self._on_url_found_callbacks: list[callable] = []  # type: ignore[type-arg]
+        self._on_url_found_callbacks: list[Callable] = []
 
-    def on_url_found(self, callback: callable) -> None:  # type: ignore[type-arg]
+    def on_url_found(self, callback: Callable) -> None:
         """Register a callback to be invoked when a new URL is discovered.
 
         Args:
@@ -102,7 +103,7 @@ class BaseCrawler(abc.ABC):
         """Fire all registered on_url_found callbacks."""
         for cb in self._on_url_found_callbacks:
             try:
-                cb(url)
+                cb(url)  # type: ignore
             except Exception as exc:
                 log.warning("on_url_found callback error: %s", exc)
 

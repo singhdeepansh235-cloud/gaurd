@@ -67,9 +67,6 @@ class TerminalReporter(BaseReporter):
         """
         try:
             from rich.console import Console
-            from rich.panel import Panel
-            from rich.table import Table
-            from rich.text import Text
 
             console = Console()
             self._print_report(console, result)

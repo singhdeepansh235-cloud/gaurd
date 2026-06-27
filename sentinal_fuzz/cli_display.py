@@ -30,7 +30,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 # Force UTF-8 on Windows so Rich box-drawing characters render correctly
 if sys.platform == "win32":
@@ -768,7 +768,7 @@ def display_summary(result: ScanResult) -> None:
 #  Template list display
 # ────────────────────────────────────────────────────────────────────
 
-def display_template_list(templates: list[dict[str, object]]) -> None:
+def display_template_list(templates: list[dict[str, Any]]) -> None:
     """Print a styled table of available fuzzing templates."""
     table = Table(
         title="[bold cyan]📋 Fuzzing Templates[/bold cyan]",
@@ -786,19 +786,22 @@ def display_template_list(templates: list[dict[str, object]]) -> None:
 
     for tmpl in templates:
         info = tmpl.get("info", {})
-        sev = str(info.get("severity", "info")).lower()  # type: ignore[union-attr]
+        sev = str(info.get("severity", "info")).lower() if isinstance(info, dict) else "info"
         style = _SEV_STYLE.get(sev, "")
         emoji = _SEV_EMOJI.get(sev, "")
-        tags = ", ".join(info.get("tags", []))  # type: ignore[union-attr]
+        tags = ", ".join(info.get("tags", [])) if isinstance(info, dict) else ""
 
         # Count payloads
         payload_count = 0
-        for req in tmpl.get("requests", []):
-            payload_count += len(req.get("payloads", []))  # type: ignore[union-attr]
+        requests_list = tmpl.get("requests", [])
+        if isinstance(requests_list, list):
+            for req in requests_list:
+                if isinstance(req, dict):
+                    payload_count += len(req.get("payloads", []))
 
         table.add_row(
             str(tmpl.get("id", "?")),
-            str(info.get("name", "Unknown")),  # type: ignore[union-attr]
+            str(info.get("name", "Unknown")) if isinstance(info, dict) else "Unknown",
             Text(f"{emoji} {sev.upper()}", style=style),
             Text(tags, style="dim"),
             str(payload_count),

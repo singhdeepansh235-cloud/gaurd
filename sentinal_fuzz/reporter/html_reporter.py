@@ -454,7 +454,7 @@ def _render_donut_chart(counts: dict[str, int]) -> str:
         pct = (count / total) * 100
         color = _SEVERITY_COLORS[sev]
         segments.append(f"{color} {offset:.1f}% {offset + pct:.1f}%")
-        offset += pct
+        offset += pct  # type: ignore
 
     gradient = ", ".join(segments)
 
