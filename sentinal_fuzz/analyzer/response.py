@@ -19,6 +19,7 @@ Usage::
 
 from __future__ import annotations
 
+import contextlib
 import re
 from dataclasses import dataclass
 
@@ -208,10 +209,8 @@ for _category, _patterns in ERROR_SIGNATURES.items():
 
 _INFO_LEAK_PATTERNS: list[re.Pattern[str]] = []
 for _pat in ERROR_SIGNATURES.get("info_leak", []):
-    try:
+    with contextlib.suppress(re.error):
         _INFO_LEAK_PATTERNS.append(re.compile(_pat, re.IGNORECASE))
-    except re.error:
-        pass
 
 
 @dataclass

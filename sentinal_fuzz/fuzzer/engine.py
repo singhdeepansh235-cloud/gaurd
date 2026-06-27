@@ -30,9 +30,7 @@ from __future__ import annotations
 import asyncio
 import copy
 import json
-import random
 import re
-import string
 import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
@@ -40,13 +38,12 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from sentinal_fuzz.core.models import Endpoint, Finding, HttpExchange
 from sentinal_fuzz.fuzzer.deduplicator import deduplicate
-from sentinal_fuzz.fuzzer.input_classifier import InputClassifier
 from sentinal_fuzz.fuzzer.detectors.exposure import SensitiveDataChecker
 from sentinal_fuzz.fuzzer.detectors.headers import SecurityHeaderChecker
 from sentinal_fuzz.fuzzer.false_positive_filter import (
     FalsePositiveFilter,
-    verify_xss_unescaped,
 )
+from sentinal_fuzz.fuzzer.input_classifier import InputClassifier
 from sentinal_fuzz.fuzzer.remediations import REMEDIATION_MAP
 from sentinal_fuzz.fuzzer.template_schema import FuzzTemplate, Matcher
 from sentinal_fuzz.utils.logger import get_logger
@@ -791,9 +788,7 @@ class FuzzEngine:
             flags = re.IGNORECASE | re.DOTALL
             if not re.search(pattern, text, flags):
                 return False
-            if baseline_text and re.search(pattern, baseline_text, flags):
-                return False
-            return True
+            return not (baseline_text and re.search(pattern, baseline_text, flags))
 
         if matcher.condition == "and":
             return all(is_new_match(p) for p in matcher.regex)

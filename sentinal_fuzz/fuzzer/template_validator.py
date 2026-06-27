@@ -188,10 +188,9 @@ def _validate_matcher(matcher: Matcher, index: int) -> list[str]:
             f"{prefix}: type='header' requires at least one entry in 'headers'."
         )
 
-    if matcher.type == "size":
-        if matcher.size_min <= 0 and matcher.size_max <= 0:
-            errors.append(
-                f"{prefix}: type='size' requires 'size_min' > 0 and/or 'size_max' > 0."
-            )
+    if matcher.type == "size" and matcher.size_min <= 0 and matcher.size_max <= 0:
+        errors.append(
+            f"{prefix}: type='size' requires 'size_min' > 0 and/or 'size_max' > 0."
+        )
 
     return errors

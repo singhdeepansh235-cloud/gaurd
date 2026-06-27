@@ -14,10 +14,10 @@ Usage::
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from sentinal_fuzz.core.models import Finding, ScanResult, SeverityLevel
+from sentinal_fuzz.core.models import ScanResult, SeverityLevel
 from sentinal_fuzz.reporter.base import BaseReporter
 from sentinal_fuzz.utils.logger import get_logger
 
@@ -80,7 +80,6 @@ class TerminalReporter(BaseReporter):
 
     def _print_report(self, console: Any, result: ScanResult) -> None:
         """Render the full report using Rich."""
-        from rich.console import Console
         from rich.panel import Panel
         from rich.table import Table
         from rich.text import Text
@@ -93,7 +92,7 @@ class TerminalReporter(BaseReporter):
         header.append(f"  Duration: {result.duration_seconds:.1f}s\n")
         header.append(f"  Profile:  {result.scan_profile}\n")
         header.append(f"  Requests: {result.stats.total_requests}\n")
-        header.append(f"  Findings: ", style="")
+        header.append("  Findings: ", style="")
         header.append(str(len(result.findings)), style="bold red" if result.findings else "bold green")
 
         console.print(Panel(header, border_style="cyan", title="Scan Summary", expand=True))

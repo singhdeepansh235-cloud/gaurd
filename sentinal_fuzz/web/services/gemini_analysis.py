@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
-import asyncio
 
 import httpx
 
@@ -58,12 +58,12 @@ async def analyze_with_gemini(url: str, phishing: dict[str, object], live: dict[
                     headers={"x-goog-api-key": api_key, "Content-Type": "application/json"},
                     json=payload,
                 )
-                
+
                 # Check for rate limit explicitly
                 if response.status_code == 429 and attempt < max_retries - 1:
                     await asyncio.sleep(base_delay * (2 ** attempt))
                     continue
-                    
+
                 response.raise_for_status()
                 break  # Successful request, break out of retry loop
 

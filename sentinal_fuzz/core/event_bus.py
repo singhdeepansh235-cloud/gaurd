@@ -20,6 +20,7 @@ Events emitted by Scanner:
 
 from __future__ import annotations
 
+import contextlib
 from collections import defaultdict
 from collections.abc import Callable
 from typing import Any
@@ -66,10 +67,8 @@ class EventBus:
             event:   Event name.
             handler: The handler to remove.
         """
-        try:
+        with contextlib.suppress(ValueError):
             self._handlers[event].remove(handler)
-        except ValueError:
-            pass
 
     def emit(self, event: str, **kwargs: Any) -> None:
         """Fire *event*, calling all registered handlers with *kwargs*.

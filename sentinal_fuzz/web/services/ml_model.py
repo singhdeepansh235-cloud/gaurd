@@ -1,5 +1,4 @@
 """Machine Learning Phishing Classifier."""
-import os
 from pathlib import Path
 
 try:
@@ -33,23 +32,22 @@ def predict_url(url: str) -> dict:
     global _model
     if not ML_AVAILABLE:
         return None
-        
-    if _model is None:
-        if not load_model():
-            return None
-            
+
+    if _model is None and not load_model():
+        return None
+
     try:
         # classes: 0 = Benign, 1 = Phishing
         proba = _model.predict_proba([url])[0]
         is_phish = proba[1] > 0.5
         confidence = proba[1] * 100 if is_phish else proba[0] * 100
-        
+
         # Calculate impact on heuristic score (up to +40 for high confidence phishing)
         # If benign, we don't subtract score to stay safe (zero-trust), or maybe slightly reduce.
         score_impact = int(proba[1] * 40) if is_phish else 0
-        
+
         return {
-            "is_phishing": True if is_phish else False,
+            "is_phishing": bool(is_phish),
             "confidence": float(confidence),
             "score_impact": score_impact,
             "phish_probability": float(proba[1])

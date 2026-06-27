@@ -187,9 +187,7 @@ class FalsePositiveFilter:
         if payload in body:
             # Additional check: make sure it's not inside an HTML comment
             # or inside a safely-quoted attribute
-            if _is_in_html_comment(body, payload):
-                return False
-            return True
+            return not _is_in_html_comment(body, payload)
 
         # If the HTML-escaped version is in the body → safely escaped, not XSS
         escaped_payload = (
@@ -227,10 +225,7 @@ class FalsePositiveFilter:
         fuzzed_ms = fuzzed.elapsed_ms
 
         # Fuzzed time must be at least 2x baseline
-        if baseline_ms > 0 and fuzzed_ms < (baseline_ms * 2):
-            return False
-
-        return True
+        return not (baseline_ms > 0 and fuzzed_ms < baseline_ms * 2)
 
 
 # ── Helper functions ───────────────────────────────────────────────

@@ -2,15 +2,16 @@
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from contextlib import asynccontextmanager
 
-from sentinal_fuzz.web.services.db import get_db, close_db
+from sentinal_fuzz.web.services.db import close_db, get_db
 
 WEB_DIR = Path(__file__).parent
 STATIC_DIR = WEB_DIR / "static"
@@ -18,7 +19,7 @@ TEMPLATE_DIR = WEB_DIR / "templates"
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> Any:
     # Startup
     await get_db()
     yield
@@ -56,8 +57,8 @@ def create_app() -> FastAPI:
     app.state.templates = templates
 
     # Register routes
-    from sentinal_fuzz.web.routes.pages import router as pages_router
     from sentinal_fuzz.web.routes.api import router as api_router
+    from sentinal_fuzz.web.routes.pages import router as pages_router
     from sentinal_fuzz.web.routes.ws import router as ws_router
 
     app.include_router(pages_router)

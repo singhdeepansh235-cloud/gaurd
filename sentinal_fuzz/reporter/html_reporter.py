@@ -21,8 +21,6 @@ from __future__ import annotations
 
 import html
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any
 
 from sentinal_fuzz.core.models import (
     Finding,
@@ -403,11 +401,8 @@ def _render_executive_summary(result: ScanResult, risk_score: int) -> str:
     critical = sum(1 for f in result.findings if f.severity == SeverityLevel.CRITICAL)
     high = sum(1 for f in result.findings if f.severity == SeverityLevel.HIGH)
 
-    severity_word = "low-risk"
-    if critical > 0:
-        severity_word = "critical"
-    elif high > 0:
-        severity_word = "significant"
+    if critical > 0 or high > 0:
+        pass
 
     top = None
     for f in sorted(result.findings, key=lambda x: _severity_order(x.severity)):

@@ -16,9 +16,11 @@ def test_main_help() -> None:
 
 def test_version_flag() -> None:
     """Verify --version prints the version string."""
+    import re
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert "0.1.0" in result.output
+    text = re.sub(r'\x1b\[.*?m', '', result.output)
+    assert "0.1.0" in text
 
 
 def test_scan_help() -> None:

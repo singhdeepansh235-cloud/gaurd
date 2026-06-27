@@ -19,7 +19,7 @@ import re
 from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from typing import TYPE_CHECKING, Any
-from urllib.parse import parse_qsl, urljoin, urlparse, urlunparse
+from urllib.parse import parse_qsl, urljoin, urlparse
 
 from sentinal_fuzz.core.models import Endpoint
 from sentinal_fuzz.crawler.base import BaseCrawler
@@ -359,21 +359,16 @@ def fingerprint_technology(
 
     # ── Cookie names ───────────────────────────────────────────────
     set_cookie = headers.get("set-cookie", "")
-    if "PHPSESSID" in set_cookie:
-        if "PHP" not in results["framework"]:
-            results["framework"].append("PHP")
-    if "JSESSIONID" in set_cookie:
-        if "Java/Servlet" not in results["framework"]:
-            results["framework"].append("Java/Servlet")
-    if "ASP.NET_SessionId" in set_cookie:
-        if "ASP.NET" not in results["framework"]:
-            results["framework"].append("ASP.NET")
-    if "csrftoken" in set_cookie.lower():
-        if "Django" not in results["framework"]:
-            results["framework"].append("Django")
-    if "laravel_session" in set_cookie.lower():
-        if "Laravel" not in results["framework"]:
-            results["framework"].append("Laravel")
+    if "PHPSESSID" in set_cookie and "PHP" not in results["framework"]:
+        results["framework"].append("PHP")
+    if "JSESSIONID" in set_cookie and "Java/Servlet" not in results["framework"]:
+        results["framework"].append("Java/Servlet")
+    if "ASP.NET_SessionId" in set_cookie and "ASP.NET" not in results["framework"]:
+        results["framework"].append("ASP.NET")
+    if "csrftoken" in set_cookie.lower() and "Django" not in results["framework"]:
+        results["framework"].append("Django")
+    if "laravel_session" in set_cookie.lower() and "Laravel" not in results["framework"]:
+        results["framework"].append("Laravel")
 
     # ── Body + URL ─────────────────────────────────────────────────
     combined_text = f"{body} {url}"
@@ -389,13 +384,11 @@ def fingerprint_technology(
     if gen_match:
         gen = gen_match.group(1)
         for tech_name, pattern in _CMS_PATTERNS:
-            if re.search(pattern, gen, re.I):
-                if tech_name not in results["cms"]:
-                    results["cms"].append(tech_name)
+            if re.search(pattern, gen, re.I) and tech_name not in results["cms"]:
+                results["cms"].append(tech_name)
         for tech_name, pattern in _FRAMEWORK_PATTERNS:
-            if re.search(pattern, gen, re.I):
-                if tech_name not in results["framework"]:
-                    results["framework"].append(tech_name)
+            if re.search(pattern, gen, re.I) and tech_name not in results["framework"]:
+                results["framework"].append(tech_name)
 
     return results
 
@@ -675,10 +668,7 @@ class HttpCrawler(BaseCrawler):
             return False
 
         # In scope?
-        if not self.is_in_scope(normalized_url):
-            return False
-
-        return True
+        return self.is_in_scope(normalized_url)
 
     # ── Form → Endpoint builder ───────────────────────────────────
 

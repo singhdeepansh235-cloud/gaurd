@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from sentinal_fuzz.core.models import SeverityLevel
-from sentinal_fuzz.fuzzer.template_loader import TemplateLoadError, TemplateLoader
+from sentinal_fuzz.fuzzer.template_loader import TemplateLoader, TemplateLoadError
 from sentinal_fuzz.fuzzer.template_schema import (
     VALID_CONDITIONS,
     VALID_MATCHER_PARTS,

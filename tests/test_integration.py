@@ -10,14 +10,12 @@ Requirements:
 
 from __future__ import annotations
 
-import asyncio
 import time
 
 import pytest
 
 from sentinal_fuzz.core.config import ScanConfig
-from sentinal_fuzz.core.models import Finding, SeverityLevel
-
+from sentinal_fuzz.core.models import Finding
 
 # ── Fixtures ──────────────────────────────────────────────────────
 
@@ -30,7 +28,7 @@ def vuln_server():
     """
     from tests.fixtures.vulnerable_app import run_server
 
-    thread, port = run_server(host="127.0.0.1", port=0)
+    __, port = run_server(host="127.0.0.1", port=0)
     base_url = f"http://127.0.0.1:{port}"
 
     # Extra wait to ensure server is fully ready

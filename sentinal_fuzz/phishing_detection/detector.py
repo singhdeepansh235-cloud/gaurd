@@ -168,7 +168,7 @@ def domain_similarity_tokens(domain: str) -> list[str]:
     translated = [token.translate(_DIGIT_SUBSTITUTIONS) for token in raw_tokens if re.search(r"\d", token)]
     if re.search(r"\d", normalized):
         translated.append(normalized.translate(_DIGIT_SUBSTITUTIONS))
-    return list(dict.fromkeys(raw_tokens + [normalized] + translated))
+    return list(dict.fromkeys([*raw_tokens, normalized, *translated]))
 
 
 def extract_subdomain(domain: str) -> str:

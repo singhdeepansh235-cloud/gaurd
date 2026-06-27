@@ -22,7 +22,6 @@ from sentinal_fuzz.analyzer.prioritizer import prioritize
 from sentinal_fuzz.analyzer.response import ERROR_SIGNATURES, ResponseAnalyzer
 from sentinal_fuzz.core.models import Finding, SeverityLevel
 
-
 # ═══════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════

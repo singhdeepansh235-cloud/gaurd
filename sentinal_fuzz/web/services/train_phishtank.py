@@ -6,20 +6,19 @@ If no CSV is provided, it simulates training with sample data for demonstration.
 
 import sys
 from pathlib import Path
-import urllib.request
-import traceback
 
 try:
+    import joblib
     import pandas as pd
-    from sklearn.pipeline import Pipeline
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.linear_model import LogisticRegression
-    import joblib
+    from sklearn.pipeline import Pipeline
 except ImportError:
     print("Installing requirements. Run: pip install scikit-learn pandas joblib")
     sys.exit(1)
 
 from ml_model import MODEL_PATH
+
 
 def load_phishtank(csv_path: str):
     print(f"Loading dataset from {csv_path}...")
@@ -31,9 +30,9 @@ def load_phishtank(csv_path: str):
         print(f"Failed to read CSV: {e}")
         return []
 
-def train_model(csv_path: str = None):
+def train_model(csv_path: str | None = None):
     phish_urls = []
-    
+
     if csv_path and Path(csv_path).exists():
         phish_urls = load_phishtank(csv_path)
     else:
@@ -56,7 +55,7 @@ def train_model(csv_path: str = None):
         return
 
     print(f"Loaded {len(phish_urls)} phishing URLs.")
-    
+
     # Generate benign URLs for training
     # Since Phishtank only has malicious URLs, we need authentic URLs to teach the model the difference.
     print("Generating authentic benign dataset...")
@@ -74,25 +73,25 @@ def train_model(csv_path: str = None):
         "https://www.nytimes.com/section/world",
         "https://github.com/Sentinel-Fuzz"
     ] * (len(phish_urls) // 10 + 1)
-        
+
     all_urls = phish_urls + benign_urls
     labels = [1]*len(phish_urls) + [0]*len(benign_urls)
-    
+
     df = pd.DataFrame({"url": all_urls, "label": labels})
-    
+
     print("Building TF-IDF + Logistic Regression ML Pipeline...")
     # Pipeline using Character N-Grams (very effective for URL analysis)
     pipeline = Pipeline([
         ('tfidf', TfidfVectorizer(analyzer='char', ngram_range=(2, 5), min_df=2)),
         ('clf', LogisticRegression(max_iter=1000, class_weight='balanced', random_state=42))
     ])
-    
+
     print("Training algorithm. This may take a minute depending on dataset size...")
     pipeline.fit(df["url"], df["label"])
-    
+
     acc = pipeline.score(df['url'], df['label'])
     print(f"Training Complete! Model Accuracy: {acc*100:.2f}%")
-    
+
     print(f"Saving serialized model to {MODEL_PATH}...")
     joblib.dump(pipeline, str(MODEL_PATH))
     print("The ML Model is now active and will be used by the backend automatically!")

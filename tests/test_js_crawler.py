@@ -13,13 +13,13 @@ skipped in CI with ``pytest -m "not playwright"``.
 
 from __future__ import annotations
 
-import asyncio
 import json
 import socket
 import threading
+from collections.abc import Generator
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -285,7 +285,7 @@ class TestJsCrawlerSpaRoutes:
             "nextjs": json.dumps({"page": "/dashboard", "buildId": "abc"}),
         }
         links = crawler._parse_spa_routes(routes_data, "http://127.0.0.1:9876")
-        assert any("/dashboard" in l for l in links)
+        assert any("/dashboard" in link for link in links)
 
     def test_angular_routes(self):
         crawler = self._make_crawler()
@@ -294,8 +294,8 @@ class TestJsCrawlerSpaRoutes:
         }
         links = crawler._parse_spa_routes(routes_data, "http://127.0.0.1:9876")
         assert len(links) == 3
-        assert any("/home" in l for l in links)
-        assert any("/settings" in l for l in links)
+        assert any("/home" in link for link in links)
+        assert any("/settings" in link for link in links)
 
     def test_api_from_js(self):
         crawler = self._make_crawler()
@@ -304,7 +304,7 @@ class TestJsCrawlerSpaRoutes:
         }
         links = crawler._parse_spa_routes(routes_data, "http://127.0.0.1:9876")
         assert len(links) == 2
-        assert any("/api/v1/users" in l for l in links)
+        assert any("/api/v1/users" in link for link in links)
 
     def test_empty_routes(self):
         crawler = self._make_crawler()
@@ -441,7 +441,7 @@ class TestJsCrawlerIntegration:
         crawler = JsCrawler(config=config, http_client=mock_client)
         endpoints = await crawler.crawl(test_server)
 
-        urls = {ep.url for ep in endpoints}
+        {ep.url for ep in endpoints}
         assert len(endpoints) >= 1  # At least the home page
 
     @pytest.mark.asyncio
@@ -452,7 +452,6 @@ class TestJsCrawlerIntegration:
 
         crawler = JsCrawler(config=config, http_client=mock_client)
         endpoints = await crawler.crawl(test_server)
-
         urls = {ep.url for ep in endpoints}
         assert any("about" in u for u in urls)
 
@@ -524,7 +523,6 @@ class TestJsCrawlerIntegration:
 
         crawler = JsCrawler(config=config, http_client=mock_client)
         endpoints = await crawler.crawl(f"{test_server}/spa-app")
-
         urls = {ep.url for ep in endpoints}
         # The SPA page sets __NEXT_DATA__ with page: "/dashboard"
         assert any("dashboard" in u for u in urls) or any("spa-route" in u for u in urls)

@@ -7,16 +7,16 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from sentinal_fuzz.web.services import db
 from sentinal_fuzz.web.services.gemini_analysis import analyze_with_gemini
 from sentinal_fuzz.web.services.phishing_detection import (
     detect_phishing,
-    run_live_checks,
     extract_domain,
+    run_live_checks,
 )
-from sentinal_fuzz.web.services import db
 from sentinal_fuzz.web.services.scan_manager import scan_manager
 
 router = APIRouter()
@@ -47,7 +47,7 @@ class PhishingCheckRequest(BaseModel):
     target: str
 
 
-async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, object]:
+async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, Any]:
     """Run comprehensive URL analysis — heuristic + live checks + AI."""
     # 1. Heuristic analysis (fast, synchronous)
     phishing = detect_phishing(url)
@@ -57,7 +57,7 @@ async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, object]:
     live = await run_live_checks(url, domain)
 
     # 3. Merge live signals into the heuristic result
-    all_reasons = list(phishing.get("reasons", []))
+    all_reasons = list(phishing.get("reasons", [])) # type: ignore
     all_reasons.extend(live.get("live_reasons", []))
 
     # Recalculate combined score
@@ -68,9 +68,9 @@ async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, object]:
     if phishing["status"] == "Safe":
         base_risk = 0
     elif phishing["status"] == "Suspicious":
-        base_risk = max(heuristic_confidence, 25)
+        base_risk = max(int(heuristic_confidence), 25) # type: ignore
     else:  # Likely Phishing
-        base_risk = max(heuristic_confidence, 55)
+        base_risk = max(int(heuristic_confidence), 55) # type: ignore
 
     combined_risk = min(base_risk + live_score, 100)
 
@@ -80,7 +80,7 @@ async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, object]:
     elif combined_risk >= 25:
         combined_status = "Suspicious"
     else:
-        combined_status = phishing["status"]
+        combined_status = str(phishing["status"])
 
     # Confidence based on combined risk
     if combined_status == "Safe":
@@ -96,7 +96,7 @@ async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, object]:
     # 4. AI analysis (Gemini)
     if skip_ai:
         ai_analysis = {
-            "enabled": False, 
+            "enabled": False,
             "summary": "AI bypassed for standard heuristic checks to preserve quota.",
             "verdict": phishing["status"]
         }
@@ -127,7 +127,7 @@ async def analyze_url(url: str, skip_ai: bool = False) -> dict[str, object]:
 # ── Scan Endpoints ─────────────────────────────────────────────────
 
 @router.post("/scans")
-async def create_scan(req: ScanRequest):
+async def create_scan(req: ScanRequest) -> Any:
     """Start a new scan."""
     # Build config dict (remove None values)
     config = {k: v for k, v in req.model_dump().items() if v is not None}
@@ -146,7 +146,7 @@ async def create_scan(req: ScanRequest):
 
 
 @router.get("/scans")
-async def list_scans():
+async def list_scans() -> Any:
     """List all scans."""
     scans = await db.get_all_scans(limit=100)
     # Also inject active scan states
@@ -159,7 +159,7 @@ async def list_scans():
 
 
 @router.get("/scans/{scan_id}")
-async def get_scan(scan_id: str):
+async def get_scan(scan_id: str) -> Any:
     """Get scan details."""
     # Check active first
     state = scan_manager.get_scan_state(scan_id)
@@ -180,7 +180,7 @@ async def get_scan(scan_id: str):
 
 
 @router.get("/scans/{scan_id}/result")
-async def get_scan_result(scan_id: str):
+async def get_scan_result(scan_id: str) -> Any:
     """Get full scan result."""
     state = scan_manager.get_scan_state(scan_id)
     if state and state.result:
@@ -195,7 +195,7 @@ async def get_scan_result(scan_id: str):
 
 
 @router.post("/scans/{scan_id}/stop")
-async def stop_scan(scan_id: str):
+async def stop_scan(scan_id: str) -> Any:
     """Stop a running scan."""
     stopped = await scan_manager.stop_scan(scan_id)
     if not stopped:
@@ -204,7 +204,7 @@ async def stop_scan(scan_id: str):
 
 
 @router.delete("/scans/{scan_id}")
-async def delete_scan(scan_id: str):
+async def delete_scan(scan_id: str) -> Any:
     """Delete a scan record."""
     deleted = await db.delete_scan(scan_id)
     if not deleted:
@@ -215,7 +215,7 @@ async def delete_scan(scan_id: str):
 # ── Template Endpoints ─────────────────────────────────────────────
 
 @router.get("/templates")
-async def list_templates():
+async def list_templates() -> Any:
     """List all fuzzing templates."""
     template_dir = Path.cwd() / "templates"
     if not template_dir.exists():
@@ -236,7 +236,7 @@ async def list_templates():
 
 
 @router.post("/templates/validate")
-async def validate_template(body: dict[str, Any]):
+async def validate_template(body: dict[str, Any]) -> Any:
     """Validate a template YAML structure."""
     errors = []
     if "id" not in body:
@@ -251,13 +251,13 @@ async def validate_template(body: dict[str, Any]):
 # ── Settings Endpoints ─────────────────────────────────────────────
 
 @router.get("/settings")
-async def get_settings():
+async def get_settings() -> Any:
     """Get all settings."""
     return await db.get_all_settings()
 
 
 @router.post("/settings")
-async def update_settings(update: SettingsUpdate):
+async def update_settings(update: SettingsUpdate) -> Any:
     """Update settings."""
     for key, value in update.settings.items():
         await db.set_setting(key, value)
@@ -265,13 +265,13 @@ async def update_settings(update: SettingsUpdate):
 
 
 @router.post("/phishing-check")
-async def phishing_check(req: PhishingCheckRequest):
+async def phishing_check(req: PhishingCheckRequest) -> Any:
     """Analyze a URL or domain for phishing indicators."""
     return JSONResponse(await analyze_url(req.target, skip_ai=True))
 
 
 @router.post("/gemini-report")
-async def gemini_report(req: PhishingCheckRequest):
+async def gemini_report(req: PhishingCheckRequest) -> Any:
     """Analyze a URL or domain strictly for the Gemini AI report."""
     results = await analyze_url(req.target, skip_ai=False)
     ai_engine = results.get("analysis_engine", {})

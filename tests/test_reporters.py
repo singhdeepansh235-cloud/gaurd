@@ -36,7 +36,6 @@ from sentinal_fuzz.reporter.reporter_factory import (
 from sentinal_fuzz.reporter.sarif_reporter import SarifReporter
 from sentinal_fuzz.reporter.terminal_reporter import TerminalReporter
 
-
 # ── Test fixtures ──────────────────────────────────────────────────
 
 

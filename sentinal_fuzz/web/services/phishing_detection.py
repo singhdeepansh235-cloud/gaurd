@@ -21,15 +21,14 @@ Live checks (network-based):
 
 from __future__ import annotations
 
-import re
-import ssl
-import math
-import socket
 import asyncio
 import logging
-from datetime import datetime, timezone
+import re
+import socket
+import ssl
+from datetime import datetime
 from difflib import SequenceMatcher
-from urllib.parse import urlparse, unquote
+from urllib.parse import unquote, urlparse
 
 import httpx
 
@@ -301,9 +300,7 @@ def _is_ip_address(hostname: str) -> bool:
     if re.match(r"^\d{1,3}(\.\d{1,3}){3}$", hostname):
         return True
     # IPv6 bracket notation or raw
-    if hostname.startswith("[") or ":" in hostname:
-        return True
-    return False
+    return bool(hostname.startswith("[") or ":" in hostname)
 
 
 # ── Live network checks ────────────────────────────────────────────
@@ -400,7 +397,7 @@ async def check_ssl_certificate(domain: str) -> dict:
             "error": f"SSL certificate verification failed: {e.verify_message}",
             "self_signed": "self-signed" in str(e).lower() or "self signed" in str(e).lower(),
         }
-    except (ConnectionRefusedError, socket.timeout, OSError):
+    except (TimeoutError, ConnectionRefusedError, OSError):
         return {
             "valid": None,
             "error": "Could not connect to port 443 — SSL not available",
@@ -408,7 +405,7 @@ async def check_ssl_certificate(domain: str) -> dict:
     except Exception as e:
         return {
             "valid": None,
-            "error": f"SSL check error: {str(e)}",
+            "error": f"SSL check error: {e!s}",
         }
 
 

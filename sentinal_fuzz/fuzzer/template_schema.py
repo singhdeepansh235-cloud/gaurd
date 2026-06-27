@@ -28,7 +28,6 @@ from dataclasses import dataclass, field
 
 from sentinal_fuzz.core.models import SeverityLevel
 
-
 # ── Valid enum-like constants ──────────────────────────────────────
 VALID_MATCHER_TYPES = frozenset({"word", "regex", "status", "timing", "size", "header"})
 VALID_MATCHER_PARTS = frozenset({"body", "header", "status", "response_time", "all"})

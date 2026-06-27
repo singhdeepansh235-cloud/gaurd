@@ -14,9 +14,8 @@ Usage::
 
 from __future__ import annotations
 
-import asyncio
+import contextlib
 import json
-import os
 import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -26,7 +25,6 @@ from sentinal_fuzz.core.models import Endpoint
 from sentinal_fuzz.crawler.base import BaseCrawler
 from sentinal_fuzz.crawler.http_crawler import (
     classify_field,
-    extract_page_data,
 )
 from sentinal_fuzz.utils.logger import get_logger
 
@@ -434,7 +432,7 @@ class JsCrawler(BaseCrawler):
         # ── Step 9: Auto-fill and submit forms ────────────────────
         await self._interact_with_forms(page, url)
 
-        # Create endpoint for the page itself  
+        # Create endpoint for the page itself
         from urllib.parse import parse_qsl
         parsed = urlparse(url)
         self._add_endpoint(Endpoint(
@@ -457,7 +455,7 @@ class JsCrawler(BaseCrawler):
 
     async def _scroll_page(self, page: Any) -> None:
         """Scroll to the bottom of the page to trigger lazy loading."""
-        try:
+        with contextlib.suppress(Exception):
             await page.evaluate("""
                 async () => {
                     const delay = (ms) => new Promise(r => setTimeout(r, ms));
@@ -472,8 +470,6 @@ class JsCrawler(BaseCrawler):
                     }
                 }
             """)
-        except Exception:
-            pass
 
     async def _click_interactive_elements(
         self, page: Any, base_url: str
@@ -530,10 +526,8 @@ class JsCrawler(BaseCrawler):
                     if after_domain == base_domain:
                         discovered.append(url_after)
                     # Navigate back
-                    try:
+                    with contextlib.suppress(Exception):
                         await page.go_back(wait_until="domcontentloaded", timeout=5000)
-                    except Exception:
-                        pass
 
                 # Extract any new links that appeared
                 try:

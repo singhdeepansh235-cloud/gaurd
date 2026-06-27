@@ -1,7 +1,8 @@
 """Entry point: python -m sentinal_fuzz.web"""
 
-import uvicorn
 import argparse
+
+import uvicorn
 
 try:
     from dotenv import load_dotenv

@@ -16,18 +16,15 @@ Test scenarios:
 
 from __future__ import annotations
 
-import pytest
-
 from sentinal_fuzz.core.models import Finding, SeverityLevel
 from sentinal_fuzz.fuzzer.deduplicator import deduplicate
-from sentinal_fuzz.fuzzer.engine import FuzzEngine, _get_part
+from sentinal_fuzz.fuzzer.engine import FuzzEngine
 from sentinal_fuzz.fuzzer.false_positive_filter import (
     FalsePositiveFilter,
     verify_xss_unescaped,
 )
 from sentinal_fuzz.fuzzer.template_schema import Matcher
 from sentinal_fuzz.utils.http import Response
-
 
 # ═══════════════════════════════════════════════════════════════════
 # Helpers — mock response factory
@@ -525,7 +522,7 @@ class TestFPFilterRules:
         baseline = _make_response(text="OK", status_code=200)
         fuzzed = _make_response(text="OK", status_code=500)
 
-        finding = _make_finding(evidence="status=500")
+        _make_finding(evidence="status=500")
         result = fpf._rule_response_differential(baseline, fuzzed)
         assert result is True
 

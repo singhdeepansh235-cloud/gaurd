@@ -7,18 +7,17 @@ Connects the Scanner's EventBus to WebSocket clients for real-time updates.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import time
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Any
 
 from sentinal_fuzz.core.config import ScanConfig
 from sentinal_fuzz.core.models import ScanResult
 from sentinal_fuzz.scoring import calculate_scan_risk_score
 from sentinal_fuzz.web.services import db
-
 
 # ── Active scan state ──────────────────────────────────────────────
 
@@ -101,10 +100,8 @@ class ScanManager:
 
     def unregister_ws(self, scan_id: str, ws: Any) -> None:
         if scan_id in self._ws_clients:
-            try:
+            with contextlib.suppress(ValueError):
                 self._ws_clients[scan_id].remove(ws)
-            except ValueError:
-                pass
 
     async def _broadcast(self, scan_id: str, event: str, data: dict[str, Any]) -> None:
         """Broadcast an event to all WebSocket clients watching a scan."""
@@ -278,10 +275,8 @@ class ScanManager:
 
         finally:
             progress_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await progress_task
-            except asyncio.CancelledError:
-                pass
 
     def get_scan_state(self, scan_id: str) -> ScanState | None:
         return self._active_scans.get(scan_id)

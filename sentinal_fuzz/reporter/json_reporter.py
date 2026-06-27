@@ -15,16 +15,13 @@ Usage::
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass
-from datetime import datetime
+from dataclasses import dataclass
 from typing import Any
 
 from sentinal_fuzz.core.models import (
     Endpoint,
     Finding,
-    HttpExchange,
     ScanResult,
-    ScanStats,
     SeverityLevel,
 )
 from sentinal_fuzz.reporter.base import BaseReporter

@@ -1,14 +1,11 @@
 """Tests for config_loader — YAML parsing, env var merge, CLI override."""
 
-import os
-import tempfile
 from pathlib import Path
 
 import pytest
 import yaml
 
 from sentinal_fuzz.config_loader import build_config, load_yaml_config
-
 
 # ── YAML loading ──────────────────────────────────────────────────
 

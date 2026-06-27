@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+from typing import Any
+
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
@@ -14,7 +16,7 @@ router = APIRouter()
 
 
 @router.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request):
+async def dashboard(request: Request) -> Any:
     """Dashboard — landing page."""
     scans = await db.get_all_scans(limit=5)
     templates = request.app.state.templates
@@ -36,7 +38,7 @@ async def dashboard(request: Request):
 
 
 @router.get("/scan/new", response_class=HTMLResponse)
-async def new_scan_page(request: Request):
+async def new_scan_page(request: Request) -> Any:
     """New scan form."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
@@ -46,7 +48,7 @@ async def new_scan_page(request: Request):
 
 
 @router.get("/phishing-check", response_class=HTMLResponse)
-async def phishing_check_page(request: Request):
+async def phishing_check_page(request: Request) -> Any:
     """Phishing detection page."""
     templates = request.app.state.templates
     return templates.TemplateResponse(
@@ -56,7 +58,7 @@ async def phishing_check_page(request: Request):
 
 
 @router.get("/scan/{scan_id}/live", response_class=HTMLResponse)
-async def live_scan_page(request: Request, scan_id: str):
+async def live_scan_page(request: Request, scan_id: str) -> Any:
     """Live scan monitoring page."""
     templates = request.app.state.templates
     state = scan_manager.get_scan_state(scan_id)
@@ -88,7 +90,7 @@ async def live_scan_page(request: Request, scan_id: str):
 
 
 @router.get("/scan/{scan_id}/report", response_class=HTMLResponse)
-async def report_page(request: Request, scan_id: str):
+async def report_page(request: Request, scan_id: str) -> Any:
     """Scan report page."""
     templates = request.app.state.templates
 
@@ -159,7 +161,7 @@ async def report_page(request: Request, scan_id: str):
 
 
 @router.get("/scans", response_class=HTMLResponse)
-async def scan_history_page(request: Request):
+async def scan_history_page(request: Request) -> Any:
     """Scan history page."""
     templates = request.app.state.templates
     scans = await db.get_all_scans(limit=100)
@@ -173,7 +175,7 @@ async def scan_history_page(request: Request):
 
 
 @router.get("/templates", response_class=HTMLResponse)
-async def templates_page(request: Request):
+async def templates_page(request: Request) -> Any:
     """Template manager page."""
     tmpl = request.app.state.templates
 
@@ -203,7 +205,7 @@ async def templates_page(request: Request):
 
 
 @router.get("/settings", response_class=HTMLResponse)
-async def settings_page(request: Request):
+async def settings_page(request: Request) -> Any:
     """Settings page."""
     templates = request.app.state.templates
     settings = await db.get_all_settings()

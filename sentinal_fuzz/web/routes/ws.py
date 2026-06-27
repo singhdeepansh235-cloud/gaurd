@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 import json
+from typing import Any
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from sentinal_fuzz.web.services.scan_manager import scan_manager
 from sentinal_fuzz.web.services import db
+from sentinal_fuzz.web.services.scan_manager import scan_manager
 
 router = APIRouter()
 
 
 @router.websocket("/ws/scan/{scan_id}")
-async def scan_websocket(websocket: WebSocket, scan_id: str):
+async def scan_websocket(websocket: WebSocket, scan_id: str) -> Any:
     """WebSocket endpoint for live scan updates.
 
     Clients connect here to receive real-time events:

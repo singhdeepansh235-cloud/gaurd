@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     """Lazily expose common package exports without forcing heavy imports."""
     if name == "ScanConfig":
         from sentinal_fuzz.core.config import ScanConfig

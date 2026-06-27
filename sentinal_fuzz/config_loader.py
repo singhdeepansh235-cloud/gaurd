@@ -26,7 +26,6 @@ import yaml
 
 from sentinal_fuzz.core.config import ScanConfig
 
-
 # ── Environment variable mapping ──────────────────────────────────
 # Maps env var names → ScanConfig field names.
 _ENV_MAP: dict[str, str] = {

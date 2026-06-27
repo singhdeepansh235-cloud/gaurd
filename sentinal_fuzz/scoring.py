@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from typing import Any
 
-
 _SCAN_SEVERITY_WEIGHTS: dict[str, int] = {
     "critical": 25,
     "high": 15,
@@ -41,7 +40,7 @@ def phishing_status_from_score(risk_score: int) -> str:
 def _extract_severity(finding: Any) -> str:
     """Support both dataclass findings and serialized finding dicts."""
     if hasattr(finding, "severity"):
-        severity = getattr(finding, "severity")
+        severity = finding.severity
         if hasattr(severity, "value"):
             return str(severity.value)
         return str(severity)

@@ -22,7 +22,6 @@ from sentinal_fuzz.fuzzer.input_classifier import (
 )
 from sentinal_fuzz.fuzzer.template_schema import FuzzTemplate, Matcher
 
-
 # ── Template fixtures ──────────────────────────────────────────────
 
 def _xss_template() -> FuzzTemplate:

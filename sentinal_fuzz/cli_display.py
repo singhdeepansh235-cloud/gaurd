@@ -44,7 +44,6 @@ if sys.platform == "win32":
             )
 
 from rich.align import Align
-from rich.columns import Columns
 from rich.console import Console, Group
 from rich.layout import Layout
 from rich.live import Live
@@ -55,7 +54,6 @@ from rich.progress import (
     SpinnerColumn,
     TaskProgressColumn,
     TextColumn,
-    TimeElapsedColumn,
     TimeRemainingColumn,
 )
 from rich.progress import Progress as RichProgress
@@ -461,10 +459,7 @@ class ScanProgressDisplay:
                 style = SEVERITY_COLORS.get(sev, "dim")
                 counter_parts.append(f"[{style}]{sev}: {count}[/{style}]")
 
-        if counter_parts:
-            counter_text = "  ".join(counter_parts)
-        else:
-            counter_text = "[dim]None yet[/dim]"
+        counter_text = "  ".join(counter_parts) if counter_parts else "[dim]None yet[/dim]"
 
         summary_panel = Panel(
             Text.from_markup(f"  Total: [bold]{self.findings_count}[/bold]   {counter_text}"),

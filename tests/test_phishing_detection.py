@@ -52,13 +52,12 @@ def test_phishing_check_endpoint() -> None:
 
     from sentinal_fuzz.web.app import create_app
 
-    TestClient = fastapi.TestClient
-    client = TestClient(create_app())
+    client = fastapi.TestClient(create_app())
 
     response = client.post("/api/phishing-check", json={"target": "http://g00gle-security-alert.com"})
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["status"] == "Likely Phishing"
-    assert payload["detected_similar_domain"] == "google.com"
-    assert payload["confidence_score"] > 0.5
+    assert payload["phishing"]["status"] == "Likely Phishing"
+    assert payload["phishing"]["matched_domain"] == "google.com"
+    assert payload["phishing"]["confidence"] > 50

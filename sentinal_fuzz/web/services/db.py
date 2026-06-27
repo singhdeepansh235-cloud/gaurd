@@ -7,10 +7,11 @@ automatically in the project's data directory.
 from __future__ import annotations
 
 import json
-import aiosqlite
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from typing import Any
+
+import aiosqlite
 
 _DB_PATH: Path | None = None
 _DB_CONN: aiosqlite.Connection | None = None
@@ -98,7 +99,7 @@ async def update_scan_status(scan_id: str, status: str) -> None:
     if status in ("complete", "failed", "cancelled"):
         updates["completed_at"] = datetime.now().isoformat()
     set_clause = ", ".join(f"{k} = ?" for k in updates)
-    values = list(updates.values()) + [scan_id]
+    values = [*list(updates.values()), scan_id]
     await db.execute(f"UPDATE scans SET {set_clause} WHERE id = ?", values)
     await db.commit()
 

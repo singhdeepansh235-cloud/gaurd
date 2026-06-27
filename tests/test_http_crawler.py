@@ -5,18 +5,14 @@ Uses ``respx`` to mock httpx responses so no real network calls are made.
 
 from __future__ import annotations
 
-import asyncio
-
 import httpx
 import pytest
 import respx
 
 from sentinal_fuzz.core.config import ScanConfig
-from sentinal_fuzz.core.models import Endpoint
 from sentinal_fuzz.crawler.http_crawler import (
     HttpCrawler,
     RobotsRules,
-    _ExtractedData,
     _is_html_content,
     classify_field,
     extract_page_data,
@@ -24,7 +20,6 @@ from sentinal_fuzz.crawler.http_crawler import (
     parse_robots_txt,
 )
 from sentinal_fuzz.utils.http import HttpClient
-
 
 # ── Helpers ───────────────────────────────────────────────────────
 
@@ -180,7 +175,7 @@ class TestExtractPageData:
         )
         data = extract_page_data(html)
         assert len(data.forms) == 1
-        field = [f for f in data.forms[0]["fields"] if f["name"] == "category"][0]
+        field = next(f for f in data.forms[0]["fields"] if f["name"] == "category")
         assert field["type"] == "select"
 
     def test_extract_script_src(self):
@@ -244,11 +239,11 @@ class TestExtractPageData:
         )
         data = extract_page_data(html)
         fields = data.forms[0]["fields"]
-        q_field = [f for f in fields if f["name"] == "q"][0]
+        q_field = next(f for f in fields if f["name"] == "q")
         assert q_field["classification"] == "search_field"
-        redir_field = [f for f in fields if f["name"] == "redirect"][0]
+        redir_field = next(f for f in fields if f["name"] == "redirect")
         assert redir_field["classification"] == "url_field"
-        upload_field = [f for f in fields if f["name"] == "upload"][0]
+        upload_field = next(f for f in fields if f["name"] == "upload")
         assert upload_field["classification"] == "file_field"
 
 
@@ -446,7 +441,7 @@ class TestHttpCrawlerIntegration:
                 )
             )
             # page2 should NOT be fetched at depth=1
-            page2_route = respx_mock.get("https://example.com/page2").mock(
+            respx_mock.get("https://example.com/page2").mock(
                 return_value=httpx.Response(
                     200,
                     text=_html_page("<p>Deep page</p>"),
@@ -551,7 +546,7 @@ class TestHttpCrawlerIntegration:
                     headers={"content-type": "text/html"},
                 )
             )
-            dup_route = respx_mock.get("https://example.com/dup").mock(
+            respx_mock.get("https://example.com/dup").mock(
                 return_value=httpx.Response(
                     200,
                     text=_html_page("<p>Dup page</p>"),
@@ -590,7 +585,7 @@ class TestHttpCrawlerIntegration:
                     headers={"content-type": "text/html"},
                 )
             )
-            admin_route = respx_mock.get("https://example.com/admin/panel").mock(
+            respx_mock.get("https://example.com/admin/panel").mock(
                 return_value=httpx.Response(
                     200,
                     text=_html_page("<p>Admin panel</p>"),

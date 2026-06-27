@@ -105,6 +105,4 @@ def _is_passive_finding(finding: Finding) -> bool:
         return True
     if finding.payload == "(passive check)":
         return True
-    if finding.parameter == "n/a":
-        return True
-    return False
+    return finding.parameter == "n/a"

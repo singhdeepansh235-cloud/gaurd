@@ -444,10 +444,7 @@ class Scanner:
                     self.config.output_format,
                     output_dir=self.config.output_dir,
                 )
-                if isinstance(factory_result, list):
-                    reporters = factory_result
-                else:
-                    reporters = [factory_result]
+                reporters = factory_result if isinstance(factory_result, list) else [factory_result]
             except Exception as exc:
                 log.warning("Could not create reporters: %s", exc)
                 reporters = []
