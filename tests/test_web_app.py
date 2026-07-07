@@ -2,7 +2,6 @@ from fastapi.testclient import TestClient
 
 from sentinal_fuzz.web.app import app
 
-
 client = TestClient(app)
 
 
