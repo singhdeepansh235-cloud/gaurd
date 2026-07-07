@@ -49,6 +49,7 @@ dev = [
     "pre-commit>=3.6",
     "fastapi>=0.115.0",
     "respx>=0.21.0",
+    "flask>=3.0.0",
 ]
 perf = [
     "uvloop>=0.19.0",

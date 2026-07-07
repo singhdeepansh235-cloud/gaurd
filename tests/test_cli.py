@@ -17,33 +17,40 @@ def test_main_help() -> None:
 def test_version_flag() -> None:
     """Verify --version prints the version string."""
     import re
+
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    text = re.sub(r'\x1b\[.*?m', '', result.output)
+    text = re.sub(r"\x1b\[.*?m", "", result.output)
     assert "0.1.0" in text
 
 
 def test_scan_help() -> None:
     """Verify scan --help works and lists all options."""
+    import re
+
     result = runner.invoke(app, ["scan", "--help"])
     assert result.exit_code == 0
-    assert "TARGET" in result.output
-    assert "--depth" in result.output
-    assert "--concurrency" in result.output
-    assert "--profile" in result.output
-    assert "--proxy" in result.output
-    assert "--rate-limit" in result.output
-    assert "--timeout" in result.output
-    assert "--exclude-path" in result.output
+    text = re.sub(r"\x1b\[.*?m", "", result.output)
+    assert "TARGET" in text
+    assert "--depth" in text
+    assert "--concurrency" in text
+    assert "--profile" in text
+    assert "--proxy" in text
+    assert "--rate-limit" in text
+    assert "--timeout" in text
+    assert "--exclude-path" in text
 
 
 def test_crawl_help() -> None:
     """Verify crawl --help works."""
+    import re
+
     result = runner.invoke(app, ["crawl", "--help"])
     assert result.exit_code == 0
-    assert "TARGET" in result.output
-    assert "--depth" in result.output
-    assert "--js" in result.output
+    text = re.sub(r"\x1b\[.*?m", "", result.output)
+    assert "TARGET" in text
+    assert "--depth" in text
+    assert "--js" in text
 
 
 def test_template_list() -> None:
@@ -68,10 +75,13 @@ def test_template_validate_missing_file() -> None:
 
 def test_report_help() -> None:
     """Verify report --help works."""
+    import re
+
     result = runner.invoke(app, ["report", "--help"])
     assert result.exit_code == 0
-    assert "INPUT_JSON" in result.output
-    assert "--format" in result.output
+    text = re.sub(r"\x1b\[.*?m", "", result.output)
+    assert "INPUT_JSON" in text
+    assert "--format" in text
 
 
 def test_report_missing_file() -> None:
