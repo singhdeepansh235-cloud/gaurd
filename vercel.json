@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "sentinal_fuzz/web/app.py",
+      "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.11"
@@ -12,7 +12,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "sentinal_fuzz/web/app.py"
+      "dest": "api/index.py"
     }
   ]
 }
