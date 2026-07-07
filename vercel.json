@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "sentinal_fuzz/web/app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.11"
+      }
     }
   ],
   "routes": [
