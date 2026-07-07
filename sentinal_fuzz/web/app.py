@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -60,6 +61,23 @@ def create_app() -> FastAPI:
     from sentinal_fuzz.web.routes.api import router as api_router
     from sentinal_fuzz.web.routes.pages import router as pages_router
     from sentinal_fuzz.web.routes.ws import router as ws_router
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon_ico() -> Response:
+        return Response(
+            content=(
+                "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>"
+                "<rect width='100' height='100' rx='20' fill='#4d9eff'/>"
+                "<path d='M50 15 L80 30 V55 C80 72 50 88 50 88 C50 88 20 72 20 55 V30 Z' "
+                "fill='none' stroke='white' stroke-width='6'/>"
+                "</svg>"
+            ),
+            media_type="image/svg+xml",
+        )
+
+    @app.get("/favicon.png", include_in_schema=False)
+    async def favicon_png() -> Response:
+        return await favicon_ico()
 
     app.include_router(pages_router)
     app.include_router(api_router, prefix="/api")
